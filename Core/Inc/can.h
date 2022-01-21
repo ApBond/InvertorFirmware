@@ -21,6 +21,12 @@ typedef enum
     CAN_ERROR
 }CAN_STATE_t;
 
+typedef enum
+{
+    ID,
+    MASK
+}Can_filter_mode_t;
+
 typedef struct 
 {
     uint8_t data[8];
@@ -31,6 +37,7 @@ typedef struct
 
 static void gpioInit(void);
 CAN_STATE_t canInit(uint32_t baudRateValue);
+void canConfigReciveFIFO(uint8_t FIFONumber,uint8_t filterNumber,Can_filter_mode_t mode,uint16_t* id);
 void canWrite(uint8_t *pData, size_t dataLength,uint16_t messageId);
 static void canMessageProcess(uint8_t mailboxNumber);
 can_recive_message_t* canRead(void);

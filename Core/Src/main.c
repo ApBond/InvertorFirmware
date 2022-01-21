@@ -5,10 +5,12 @@ int main(void)
 {
     uint8_t i;
     uint8_t data[]={1,2,3,4,5,6,7,8};
+    uint16_t filter[]={0x1,0x2,0x3,0x4};
     can_recive_message_t* reciveData;
     while(RccClockInit()!=READY);
     delayInit();
     canInit(0x011c0008);
+    canConfigReciveFIFO(1,0,ID,&filter);
     RCC->AHBENR|=RCC_AHBENR_GPIOBEN;
     GPIOB->MODER=0;
     GPIOB->MODER|=GPIO_MODER_MODER3_0;

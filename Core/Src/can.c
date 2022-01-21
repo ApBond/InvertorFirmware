@@ -8,7 +8,7 @@ static uint16_t bufferMessageCount=0;
 void CAN_SCE_IRQHandler(void)
 {
     CAN->MSR|= CAN_MSR_ERRI;
-    //GPIOB->BSRR=GPIO_BSRR_BR_3;
+    GPIOB->BSRR=GPIO_BSRR_BR_3;
     //TODO
 }
 
@@ -22,7 +22,18 @@ void CAN_RX0_IRQHandler(void)
         canMessageProcess(0);
         CAN->RF0R|=CAN_RF0R_RFOM0;
     }
-    GPIOB->BSRR=GPIO_BSRR_BR_3;   
+}
+
+void CAN_RX1_IRQHandler(void)
+{
+    uint8_t messageCount;
+    uint8_t i;
+    messageCount=CAN->RF1R & CAN_RF1R_FMP1_Msk;
+    for(i=0;i<messageCount;i++)
+    {
+        canMessageProcess(1);
+        CAN->RF1R|=CAN_RF1R_RFOM1;
+    } 
 }
 
 static void canMessageProcess(uint8_t mailboxNumber)
@@ -41,6 +52,7 @@ static void canMessageProcess(uint8_t mailboxNumber)
     bufferPointer++;
     if(bufferMessageCount<CAN_RECIVE_BUFFER_SIZE) bufferMessageCount++;
     if(bufferPointer==CAN_RECIVE_BUFFER_SIZE) bufferPointer=0;
+    //Если используется RTOS добавить установку семафора на чтение
 }
 
 
@@ -63,9 +75,10 @@ CAN_STATE_t canInit(uint32_t baudRateValue)
     CAN->BTR=baudRateValue;//Настройка скорости обмена
     //Конфигурация прерываний
     CAN->IER|=CAN_IER_ERRIE | CAN_IER_EWGIE;//Преревание по ошибке на шине
-    CAN->IER|=CAN_IER_FMPIE0;//Перерывание при получении сообщения в FIFO0
+    CAN->IER|=CAN_IER_FMPIE0 | CAN_IER_FMPIE1;//Перерывание при получении сообщения в FIFO0 и FIFO1
     NVIC_EnableIRQ(CAN_SCE_IRQn);
     NVIC_EnableIRQ(CAN_RX0_IRQn);
+    NVIC_EnableIRQ(CAN_RX1_IRQn);
     __enable_irq();
     CAN->MCR &= ~CAN_MCR_INRQ;//Перевод CAN в нормальный режим
     while(CAN->MSR & CAN_MSR_INAK) 
@@ -75,13 +88,20 @@ CAN_STATE_t canInit(uint32_t baudRateValue)
         i++;
     }
     CAN->MCR&=~CAN_MCR_SLEEP;
-
-    CAN->FMR=1;
-    CAN->sFilterRegister[0].FR1=0;
-    CAN->FA1R|=CAN_FA1R_FACT0;
-    CAN->FMR=0;
-
     return CAN_READY;
+}
+
+void canConfigReciveFIFO(uint8_t FIFONumber,uint8_t filterNumber,Can_filter_mode_t mode,uint16_t* id)
+{
+    CAN->FMR=1;//Ввести фильтр в режим инициализации
+    CAN->sFilterRegister[filterNumber].FR1=id[0]<<5 | id[1]<<21;
+    CAN->sFilterRegister[filterNumber].FR2=id[2]<<5 | id[3]<<21;
+    if(mode==ID)
+        CAN->FM1R|=1<<filterNumber;
+    CAN->FA1R|=1<<filterNumber;
+    if(FIFONumber==1)
+        CAN->FFA1R|=1<<filterNumber;
+    CAN->FMR=0;
 }
 
 void canWrite(uint8_t *pData, size_t dataLength,uint16_t messageId)
