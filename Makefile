@@ -39,6 +39,7 @@ C_SOURCES =  \
 Core/Src/main.c \
 Core/Src/can.c \
 Core/Src/rcc.c \
+core/Src/hallFeedback.c \
 Core/Src/system_stm32f3xx.c  
 
 # ASM sources

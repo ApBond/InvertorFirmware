@@ -4,24 +4,23 @@
 int main(void)
 {
     uint8_t i;
-    uint8_t data[]={1,2,3,4,5,6,7,8};
+    uint8_t data[]={0x1,0x2,0x3,0x4,0x5,0x6,0x7,0x8};
     uint16_t filter[]={0x1,0x2,0x3,0x4};
     can_recive_message_t* reciveData;
+    uint8_t speed;
     while(RccClockInit()!=READY);
     delayInit();
     canInit(0x011c0008);
     canConfigReciveFIFO(1,0,ID,&filter);
-    RCC->AHBENR|=RCC_AHBENR_GPIOBEN;
-    GPIOB->MODER=0;
-    GPIOB->MODER|=GPIO_MODER_MODER3_0;
-    GPIOB->BSRR=GPIO_BSRR_BS_3;
+    hallTimInit();
     while(1)
     {
-        //canWrite(data,2,12);
-        reciveData=canRead();
+        speed=(uint8_t)getSpeed();
+        canWrite(&speed,1,10);
+        /*reciveData=canRead();
         if(reciveData!=0)
-            canWrite(&reciveData->data,reciveData->dataLen,reciveData->messageId);
-        delay_ms(10);
+            canWrite(&reciveData->data,reciveData->dataLen,reciveData->messageId);*/
+        delay_ms(200);
         i++;
     }
 }

@@ -8,7 +8,6 @@ static uint16_t bufferMessageCount=0;
 void CAN_SCE_IRQHandler(void)
 {
     CAN->MSR|= CAN_MSR_ERRI;
-    GPIOB->BSRR=GPIO_BSRR_BR_3;
     //TODO
 }
 
