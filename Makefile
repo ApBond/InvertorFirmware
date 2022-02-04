@@ -40,6 +40,8 @@ Core/Src/main.c \
 Core/Src/can.c \
 Core/Src/rcc.c \
 core/Src/hallFeedback.c \
+core/Src/PWMControl.c \
+core/Src/currentSensing.c \
 Core/Src/system_stm32f3xx.c  
 
 # ASM sources

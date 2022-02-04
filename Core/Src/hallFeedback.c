@@ -75,17 +75,44 @@ static float hallGetAngle(uint8_t ha,uint8_t hb,uint8_t hc)
 	return angle;
 }
 
+void hallInitAngle(uint8_t ha,uint8_t hb,uint8_t hc)
+{
+	uint8_t hallState=hc<<2 | hb<<1 | ha;
+	switch(hallState)
+	{
+		case 5:
+			elAngle=OFFSET_ANGLE_RAD+DEG_60/2;
+			break;
+		case 1:
+			elAngle=OFFSET_ANGLE_RAD+DEG_60+DEG_60/2;
+			break;
+		case 3:
+			elAngle=OFFSET_ANGLE_RAD+2*DEG_60+DEG_60/2;
+			break;
+		case 2:
+			elAngle=OFFSET_ANGLE_RAD-2*DEG_60-DEG_60/2;
+			break;
+		case 6:
+			elAngle=OFFSET_ANGLE_RAD-DEG_60-DEG_60/2;
+			break;
+		case 4:
+			elAngle=OFFSET_ANGLE_RAD-DEG_60/2;
+			break;
+	}
+}
+
 void TIM2_IRQHandler(void)
 {
     static uint8_t state=0;
     static uint64_t speedBuff=0;
     uint32_t elPeriod;
+    uint16_t angleInterpolPeriod;
     float mPeriod;
 	if(TIM2->SR & TIM_SR_CC1IF)
 	{
         TIM2->SR&=~TIM_SR_CC1IF;
 		elAngle=hallGetAngle((GPIOA->IDR&(1<<0)),((GPIOB->IDR&(1<<3))>>3),((GPIOA->IDR&(1<<2))>>2));
-		//SVPWM_realise_dq(UD,UQ,elAngle,U_SOURSE);
+		SVPWM_realise_dq(UD,UQ,elAngle,U_SOURSE);
 		if(state<HALL_MEASURE_COUNT-1)
 		{
 			speedBuff+=TIM2->CCR1;
@@ -95,21 +122,13 @@ void TIM2_IRQHandler(void)
 		{
 			speedBuff+=TIM2->CCR1;
 			elPeriod=speedBuff/HALL_MEASURE_COUNT;
-				
-			
-			//sixStep(GPIOA->IDR&(1<<0),((GPIOA->IDR&(1<<1))>>1),((GPIOB->IDR&(1<<10))>>10));
-
-			//TIM2->SR&=~TIM_SR_CC1IF;
-			//angleInterpolPeriod=(uint32_t)((float)TIM2->CCR1*6*d_ANGLE_RAD/(2*PI));
 			mPeriod=elPeriod*6/POLE_PAIRS;
 			mSpeed=60*72000000/mPeriod;
-			/*angleInterpolPeriod=(uint32_t)((float)elPeriod*d_ANGLE_RAD/PI_3);
-			TIM5->CR1&=~TIM_CR1_CEN; 
-			TIM5->CNT=0;
-			TIM5->ARR=angleInterpolPeriod;
-			period=angleInterpolPeriod-1;
-			HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_0);
-			TIM5->CR1|=TIM_CR1_CEN;*/
+			angleInterpolPeriod=(uint32_t)((float)elPeriod*d_ANGLE_RAD/(500*PI_3));
+			TIM3->CR1&=~TIM_CR1_CEN; 
+			TIM3->CNT=0;
+			TIM3->ARR=angleInterpolPeriod;
+			TIM3->CR1|=TIM_CR1_CEN;
 			state=0;
 			speedBuff=0;
 		}
@@ -118,20 +137,11 @@ void TIM2_IRQHandler(void)
 
 void TIM3_IRQHandler(void)
 {
-    static uint8_t state=0;
     if(TIM3->SR & TIM_SR_UIF)
     {
         TIM3->SR&=~TIM_SR_UIF;
-        if(state)
-        {
-            GPIOB->BSRR|=GPIO_BSRR_BR_5;
-            state=0;
-        }
-        else
-        {
-            GPIOB->BSRR|=GPIO_BSRR_BS_5;
-            state=1;
-        }
+		elAngle+=d_ANGLE_RAD;
+		SVPWM_realise_dq(UD,UQ,elAngle,U_SOURSE);
     }
 }
 
@@ -151,17 +161,23 @@ void hallTimInit(void)
     TIM2->DIER |= TIM_DIER_CC1IE;
     NVIC_EnableIRQ(TIM2_IRQn);
     TIM2->CR1 |= TIM_CR1_CEN;
-
-    /*RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
+    RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
     TIM3->DIER |= TIM_DIER_UIE;
+    TIM3->CNT=0;
+    TIM3->PSC=500-1;
     NVIC_EnableIRQ(TIM3_IRQn);
-    TIM3->ARR = 7200-1;
-    TIM3->CR1|=TIM_CR1_CEN;
 
-    GPIOB->MODER|=GPIO_MODER_MODER5_0;*/
+    NVIC_SetPriority(TIM2_IRQn,0);
+    NVIC_SetPriority(TIM3_IRQn,1);
 }
 
 float getSpeed(void)
 {
     return mSpeed;
 }
+
+float getAngle(void)
+{
+    return elAngle;
+}
+

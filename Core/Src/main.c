@@ -13,14 +13,22 @@ int main(void)
     canInit(0x011c0008);
     canConfigReciveFIFO(1,0,ID,&filter);
     hallTimInit();
+    PWMInit();
+    //PWMStart();
     while(1)
     {
         speed=(uint8_t)getSpeed();
         canWrite(&speed,1,10);
-        /*reciveData=canRead();
+        reciveData=canRead();
         if(reciveData!=0)
-            canWrite(&reciveData->data,reciveData->dataLen,reciveData->messageId);*/
+        {
+            if(reciveData->messageId==0x01 && reciveData->data[0]==1)
+                PWMStart();
+            if(reciveData->messageId==0x01 && reciveData->data[0]==0)
+                PWMStop();   
+        }
+        
+        //canWrite(&reciveData->data,reciveData->dataLen,reciveData->messageId);
         delay_ms(200);
-        i++;
     }
 }

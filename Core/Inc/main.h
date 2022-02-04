@@ -5,6 +5,7 @@
 #include "rcc.h"
 #include "can.h"
 #include "hallFeedback.h"
+#include "PWMControl.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
