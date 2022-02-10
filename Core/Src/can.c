@@ -61,6 +61,7 @@ static void gpioInit(void)
     CAN_PORT->OSPEEDR|=0b11<<(2*CAN_TX_PIN) | 0b11<<(2*CAN_RX_PIN);
     CAN_PORT->AFR[CAN_TX_PIN/8]|=CAN_TX_AF<<(4*(CAN_TX_PIN-8*(CAN_TX_PIN/8)));
     CAN_PORT->AFR[CAN_RX_PIN/8]|=CAN_RX_AF<<(4*(CAN_RX_PIN-8*(CAN_RX_PIN/8)));
+
 }
 
 CAN_STATE_t canInit(uint32_t baudRateValue)

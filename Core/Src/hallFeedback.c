@@ -2,6 +2,8 @@
 
 static float elAngle=0;
 static float mSpeed;
+extern d_q_t Idq;
+
 
 static float hallGetAngle(uint8_t ha,uint8_t hb,uint8_t hc)
 {
@@ -112,7 +114,8 @@ void TIM2_IRQHandler(void)
 	{
         TIM2->SR&=~TIM_SR_CC1IF;
 		elAngle=hallGetAngle((GPIOA->IDR&(1<<0)),((GPIOB->IDR&(1<<3))>>3),((GPIOA->IDR&(1<<2))>>2));
-		SVPWM_realise_dq(UD,UQ,elAngle,U_SOURSE);
+		//currentLoop(Idq.d,Idq.q);
+		SVPWM_realise_dq(UD,UQ,elAngle,U_SOURSE);	
 		if(state<HALL_MEASURE_COUNT-1)
 		{
 			speedBuff+=TIM2->CCR1;
@@ -141,6 +144,7 @@ void TIM3_IRQHandler(void)
     {
         TIM3->SR&=~TIM_SR_UIF;
 		elAngle+=d_ANGLE_RAD;
+		//currentLoop(Idq.d,Idq.q);
 		SVPWM_realise_dq(UD,UQ,elAngle,U_SOURSE);
     }
 }
@@ -169,6 +173,9 @@ void hallTimInit(void)
 
     NVIC_SetPriority(TIM2_IRQn,0);
     NVIC_SetPriority(TIM3_IRQn,1);
+
+	GPIOA->PUPDR |= GPIO_PUPDR_PUPDR0_1 | GPIO_PUPDR_PUPDR2_1;
+	//GPIOA->PUPDR |= GPIO_PUPDR_PUPDR1_1;
 }
 
 float getSpeed(void)

@@ -39,6 +39,7 @@ C_SOURCES =  \
 Core/Src/main.c \
 Core/Src/can.c \
 Core/Src/rcc.c \
+core/Src/control.c \
 core/Src/hallFeedback.c \
 core/Src/PWMControl.c \
 core/Src/currentSensing.c \

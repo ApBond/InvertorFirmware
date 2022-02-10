@@ -17,6 +17,9 @@ void PWMInit(void)
     TIM1->PSC = PWM_PRESCALER-1;
     TIM1->ARR = PWM_ARR;
 
+	TIM1->CR2 |= 0b111<<TIM_CR2_MMS2_Pos;//Enable CCR4 trigger
+	TIM1->CCR4 = 10;
+
     GPIOB->PUPDR |= GPIO_PUPDR_PUPDR0_1;
     GPIOB->PUPDR |= GPIO_PUPDR_PUPDR1_1;
     GPIOA->PUPDR |= GPIO_PUPDR_PUPDR7_1 | GPIO_PUPDR_PUPDR8_1 | GPIO_PUPDR_PUPDR9_1 | GPIO_PUPDR_PUPDR10_1;
@@ -51,7 +54,7 @@ void PWMStop(void)
 	R_BL;
 	R_CH;
 	R_CL;
-    TIM1->CR1&=~TIM_CR1_CEN;
+    //TIM1->CR1&=~TIM_CR1_CEN;
 }
 
 void SVPWM_realise_dq(float ud,float uq,float tetta,float Ud)
