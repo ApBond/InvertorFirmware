@@ -12,6 +12,7 @@ static ADC_state_t ADCstate;
 static uint32_t phaseAOffsetFactor;
 static uint32_t phaseBOffsetFactor;
 static uint32_t phaseCOffsetFactor;
+extern int8_t direction;
 
 static void ADCGpioInit(void)
 {
@@ -23,6 +24,9 @@ void ADC1_2_IRQHandler(void)
     static uint16_t i;
     alpha_betta_t I_alpha_betta;
     float rotorElAngle;
+    float cosElAngle;
+    float sinElAngle;
+    static d_q_t IdqBuff[CURRENT_MEASURE_COUNT];
     if(ADC1->ISR & ADC_ISR_JEOC)
     {
         ADC1->ISR|=ADC_ISR_JEOC;
@@ -36,12 +40,47 @@ void ADC1_2_IRQHandler(void)
                 phaseAOffsetFactor/=ADC_CALIBRATION_COUNT;
                 phaseCOffsetFactor/=ADC_CALIBRATION_COUNT;
                 ADCstate=ADC_OK;
+                i=0;
             }
             else
                 ADC1->CR |= ADC_CR_JADSTART;
         }
         else
         {
+            //GPIOB->ODR^=(1<<5);
+            /*if(i<CURRENT_MEASURE_COUNT-1)
+            {
+                currentA=ADC1->JDR1-phaseAOffsetFactor;
+                currentC=ADC2->JDR1-phaseCOffsetFactor;
+                Ia=ADC_TO_AMP*currentA;
+                Ic=ADC_TO_AMP*currentC;
+                Ib=-Ia-Ic;
+                I_alpha_betta.alpha=Ia;
+                I_alpha_betta.betta=(Ia+2*Ib)/SQRT_3;
+                rotorElAngle=getAngle();
+                cosElAngle=getCosElAngle();
+                sinElAngle=getSinElAngle();
+                //Idq.d=I_alpha_betta.alpha*cosElAngle+I_alpha_betta.betta*sinElAngle;
+                //Idq.q=I_alpha_betta.betta*cosElAngle-I_alpha_betta.alpha*sinElAngle;
+                IdqBuff[i].d=I_alpha_betta.alpha*cosElAngle+I_alpha_betta.betta*sinElAngle;
+                IdqBuff[i].q=I_alpha_betta.betta*cosElAngle-I_alpha_betta.alpha*sinElAngle;
+                i++;
+            }
+            else
+            {
+                Idq.d=0;
+                Idq.q=0;
+                IdqBuff[i].d=I_alpha_betta.alpha*cosElAngle+I_alpha_betta.betta*sinElAngle;
+                IdqBuff[i].q=I_alpha_betta.betta*cosElAngle-I_alpha_betta.alpha*sinElAngle;
+                for(i=0;i<CURRENT_MEASURE_COUNT;i++)
+                {
+                    Idq.d+=IdqBuff[i].d;
+                    Idq.q+=IdqBuff[i].q;
+                }
+                Idq.d/=CURRENT_MEASURE_COUNT;
+                Idq.q/=CURRENT_MEASURE_COUNT;
+                i=0;
+            }*/
             currentA=ADC1->JDR1-phaseAOffsetFactor;
             currentC=ADC2->JDR1-phaseCOffsetFactor;
             Ia=ADC_TO_AMP*currentA;
@@ -50,13 +89,20 @@ void ADC1_2_IRQHandler(void)
             I_alpha_betta.alpha=Ia;
             I_alpha_betta.betta=(Ia+2*Ib)/SQRT_3;
             rotorElAngle=getAngle();
-            //Idq.d=I_alpha_betta.alpha*cosf(rotorElAngle)+I_alpha_betta.betta*sinf(rotorElAngle);
-            //Idq.q=I_alpha_betta.betta*cosf(rotorElAngle)-I_alpha_betta.alpha*sinf(rotorElAngle);
-            Idq.d=I_alpha_betta.alpha*cosf(rotorElAngle)+I_alpha_betta.betta*sinf(rotorElAngle);
-            Idq.q=I_alpha_betta.betta*cosf(rotorElAngle)-I_alpha_betta.alpha*sinf(rotorElAngle);
-            //Idq.d=Ia;
-            //Idq.q=-Ia-Ic;
-            //currentLoop(Idq.d,Idq.q);
+            cosElAngle=getCosElAngle();
+            sinElAngle=getSinElAngle();
+            //.d=I_alpha_betta.alpha*cosElAngle+I_alpha_betta.betta*sinElAngle;
+            //Idq.q=I_alpha_betta.betta*cosElAngle-I_alpha_betta.alpha*sinElAngle;
+            //Idq.d=I_alpha_betta.alpha*sinElAngle+I_alpha_betta.betta*cosElAngle;
+            //Idq.q=I_alpha_betta.alpha*cosElAngle-I_alpha_betta.betta*sinElAngle;
+            Idq.d=Ia;
+            Idq.q=-Ia-Ic;
+            //currentLoop(direction*Idq.d,direction*Idq.q,rotorElAngle);
+            if(fabs(Ia)>=CURRENT_LIM || fabs(Ib)>=CURRENT_LIM || fabs(Ic)>=CURRENT_LIM)
+            {
+                PWMStop();  
+                stopSpeedLoop(); 
+            }
         }
     }
 }

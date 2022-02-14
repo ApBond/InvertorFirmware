@@ -4,7 +4,9 @@
 #include "main.h"
 #include "currentSensing.h"
 
-#define REF_TORQUE 2
+#define SPEED_LOOP_TIM_ARR 10
+
+#define REF_TORQUE 3
 
 typedef struct
 {
@@ -16,6 +18,11 @@ typedef struct
 }PIDHandle_t;
 
 float PIDController(PIDHandle_t * PID,float error);
-void currentLoop(float Id,float Iq);
+void currentLoop(float Id,float Iq,float rotorElAngle);
+void regulatorClear(void);
+void speedLoopTimerInit(void);
+void startSpeedLoop(void);
+void stopSpeedLoop(void);
+
 
 #endif

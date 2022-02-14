@@ -4,8 +4,10 @@
 #include "main.h"
 
 #define HALL_FILTER 5
-#define HALL_MEASURE_COUNT 5
+#define HALL_MEASURE_COUNT 15
 #define POLE_PAIRS 12
+
+#define MIN_SPEED_RPM 5;
 
 #define d_ANGLE 1
 #define d_ANGLE_RAD d_ANGLE*0.017453
@@ -22,10 +24,13 @@
 #define PI_2 6.2831853
 #define DEG_60 1.0472
 
+
 static float hallGetAngle(uint8_t ha,uint8_t hb,uint8_t hc);
 void hallInitAngle(uint8_t ha,uint8_t hb,uint8_t hc);
 void hallTimInit(void);
 float getSpeed(void);
 float getAngle(void);
+float getSinElAngle(void);
+float getCosElAngle(void);
 
 #endif

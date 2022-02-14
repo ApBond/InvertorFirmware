@@ -17,8 +17,7 @@ void PWMInit(void)
     TIM1->PSC = PWM_PRESCALER-1;
     TIM1->ARR = PWM_ARR;
 
-	TIM1->CR2 |= 0b111<<TIM_CR2_MMS2_Pos;//Enable CCR4 trigger
-	TIM1->CCR4 = 10;
+	TIM1->CR2 |= 0b10<<TIM_CR2_MMS2_Pos;//Enable CCR4 trigger
 
     GPIOB->PUPDR |= GPIO_PUPDR_PUPDR0_1;
     GPIOB->PUPDR |= GPIO_PUPDR_PUPDR1_1;
@@ -27,6 +26,7 @@ void PWMInit(void)
 
 void PWMStart(void)
 {
+	regulatorClear();
     TIM1->CCR1=0;
 	TIM1->CCR2=0;
 	TIM1->CCR3=0;
@@ -54,14 +54,17 @@ void PWMStop(void)
 	R_BL;
 	R_CH;
 	R_CL;
-    //TIM1->CR1&=~TIM_CR1_CEN;
+    TIM1->CR1&=~TIM_CR1_CEN;
+	
 }
 
 void SVPWM_realise_dq(float ud,float uq,float tetta,float Ud)
 {
     static uint16_t timeA=0,timeB=0,timeC=0;
-	float alpha=uq*cosf(tetta)+ud*sinf(tetta);
-	float betta=-uq*sinf(tetta)+ud*cosf(tetta);
+	float cosElAngle=getCosElAngle();
+    float sinElAngle=getSinElAngle();
+	float alpha=uq*cosElAngle+ud*sinElAngle;
+	float betta=-uq*sinElAngle+ud*cosElAngle;
 	uint16_t PWMPeriod=TIM1->ARR;
 	float u_alpha=alpha*SQRT_3*PWMPeriod;
 	float u_betta=-1*PWMPeriod*betta;

@@ -5,6 +5,9 @@
 
 #define ADC_CALIBRATION_COUNT 10
 #define ADC_TO_AMP 0.00806
+#define CURRENT_MEASURE_COUNT 2
+
+#define CURRENT_LIM 10
 
 typedef enum
 {
