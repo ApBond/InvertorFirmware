@@ -1,12 +1,14 @@
 #include "control.h"
     
 d_q_t Us;
-float referenceSpeed=50;
+
+static float referenceSpeed=40;
+static float referenceTorque=0;
 
 PIDHandle_t idLoopPID=
 {
-    .kp=0.0001,
-    .ki=0.000003,
+    .kp=0.004,
+    .ki=0.000008,
     .kd=0,
     .prevError=0,
     .integralTerm=0
@@ -14,8 +16,8 @@ PIDHandle_t idLoopPID=
 
 PIDHandle_t iqLoopPID=
 {
-    .kp=0.0001,
-    .ki=0.000003,
+    .kp=0.004,
+    .ki=0.000008,
     . kd=0,
     .prevError=0,
     .integralTerm=0
@@ -23,8 +25,8 @@ PIDHandle_t iqLoopPID=
 
 PIDHandle_t speedLoopPID=
 {
-    .kp=0.002,
-    .ki=0.000007,
+    .kp=0.1,
+    .ki=0.00004,
     . kd=0,
     .prevError=0,
     .integralTerm=0
@@ -34,46 +36,44 @@ extern float Ia;
 extern float Ic;
 extern float Ib;
 
-void TIM16_IRQHandler(void)
+d_q_t circleLimitation(d_q_t vector)
 {
-    float Uq;
-    if(TIM16->SR & TIM_SR_UIF)
+    float U = vector.d*vector.d+vector.q*vector.q;
+    float sqrtU;
+    d_q_t rez;
+    if(U>1)
     {
-        TIM16->SR &=~TIM_SR_UIF;
-        Uq=PIDController(&speedLoopPID,referenceSpeed-getSpeed());
-        if(Uq>0.5) Uq=0.5;
-        if(Uq<-0.5) Uq=-0.5;
-        SVPWM_realise_dq(0,Uq,getAngle(),12);
+        sqrtU=sqrt(U);
+        rez.d=vector.d/sqrtU;
+        rez.q=vector.q/sqrtU;
+        return rez;
     }
-}
-
-float PIDController(PIDHandle_t * PID,float error)
-{
-    float deltaError = error - PID->prevError;
-    float controllerOut;
-    PID->prevError=error;
-    PID->integralTerm+=error;
-    controllerOut=error*PID->kp+PID->integralTerm*PID->ki+deltaError*PID->kd;
-    return controllerOut;
+    return vector;
 }
 
 void currentLoop(float Id,float Iq,float rotorElAngle)
 {
     d_q_t Is;
     alpha_betta_t I_alpha_betta;
-    //float rotorElAngle;
-    /*I_alpha_betta.alpha=Ia;
-    I_alpha_betta.betta=(Ia+2*Ib)/SQRT_3;
-    rotorElAngle=getAngle();
-    Is.d=I_alpha_betta.alpha*cosf(rotorElAngle)+I_alpha_betta.betta*sinf(rotorElAngle);
-    Is.q=I_alpha_betta.betta*cosf(rotorElAngle)-I_alpha_betta.alpha*sinf(rotorElAngle);*/
-    //Us.d = PIDController(&idLoopPID,0-Id);
-    //Us.d=0;
-    //Us.q = PIDController(&iqLoopPID,REF_TORQUE-Iq);
-    //if(Us.d>0.7) Us.d=0.7;
-    //if(Us.q>0.7) Us.q=0.7;
-    //SVPWM_realise_dq(0,0.5,rotorElAngle,12);
+    Us.d = PIDController(&idLoopPID,0-Id);
+    Us.q = PIDController(&iqLoopPID,referenceTorque-Iq);
+    Us=circleLimitation(Us);
+    SVPWM_realise_dq(Us.d,Us.q,rotorElAngle,12);
 }
+
+void speedLoop(void)
+{
+    float torque;
+    referenceTorque=PIDController(&speedLoopPID,referenceSpeed-getSpeed());
+    //referenceTorque=2;
+    //setReferenceTorque(torque);
+    
+}
+
+// d_q_t circleLimitation(d_q_t vector)
+// {
+
+// }
 
 void regulatorClear(void)
 {
@@ -102,4 +102,48 @@ void startSpeedLoop(void)
 void stopSpeedLoop(void)
 {
     TIM16->CR1&=~TIM_CR1_CEN;
+}
+
+void setReferenceSpeed(float speed)
+{
+    if(speed>=MAX_SPEED_RPM)
+        referenceSpeed=MAX_SPEED_RPM;
+    else if (-1*MAX_SPEED_RPM<=speed)
+        referenceSpeed=-1*MAX_SPEED_RPM;
+    else
+        referenceSpeed=speed;
+}
+
+void setReferenceTorque(float torque)
+{
+    if(torque>=MAX_TORQUE_AMP)
+        referenceTorque=MAX_TORQUE_AMP;
+    else if (-1*MAX_TORQUE_AMP<=torque)
+        referenceTorque=-1*MAX_TORQUE_AMP;
+    else
+        referenceTorque=torque;
+}
+
+float getReferenceTorque(void)
+{
+    return referenceTorque;
+}
+
+void TIM16_IRQHandler(void)
+{
+    if(TIM16->SR & TIM_SR_UIF)
+    {
+        TIM16->SR &=~TIM_SR_UIF;
+        speedLoop();
+    }
+}
+
+float PIDController(PIDHandle_t * PID,float error)
+{
+    float deltaError = error - PID->prevError;
+    float controllerOut;
+    PID->prevError=error;
+    PID->integralTerm+=error;
+    controllerOut=error*PID->kp+PID->integralTerm*PID->ki+deltaError*PID->kd;
+    return controllerOut;
 }

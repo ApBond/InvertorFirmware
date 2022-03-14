@@ -47,62 +47,26 @@ void ADC1_2_IRQHandler(void)
         }
         else
         {
-            //GPIOB->ODR^=(1<<5);
-            /*if(i<CURRENT_MEASURE_COUNT-1)
-            {
-                currentA=ADC1->JDR1-phaseAOffsetFactor;
-                currentC=ADC2->JDR1-phaseCOffsetFactor;
-                Ia=ADC_TO_AMP*currentA;
-                Ic=ADC_TO_AMP*currentC;
-                Ib=-Ia-Ic;
-                I_alpha_betta.alpha=Ia;
-                I_alpha_betta.betta=(Ia+2*Ib)/SQRT_3;
-                rotorElAngle=getAngle();
-                cosElAngle=getCosElAngle();
-                sinElAngle=getSinElAngle();
-                //Idq.d=I_alpha_betta.alpha*cosElAngle+I_alpha_betta.betta*sinElAngle;
-                //Idq.q=I_alpha_betta.betta*cosElAngle-I_alpha_betta.alpha*sinElAngle;
-                IdqBuff[i].d=I_alpha_betta.alpha*cosElAngle+I_alpha_betta.betta*sinElAngle;
-                IdqBuff[i].q=I_alpha_betta.betta*cosElAngle-I_alpha_betta.alpha*sinElAngle;
-                i++;
-            }
-            else
-            {
-                Idq.d=0;
-                Idq.q=0;
-                IdqBuff[i].d=I_alpha_betta.alpha*cosElAngle+I_alpha_betta.betta*sinElAngle;
-                IdqBuff[i].q=I_alpha_betta.betta*cosElAngle-I_alpha_betta.alpha*sinElAngle;
-                for(i=0;i<CURRENT_MEASURE_COUNT;i++)
-                {
-                    Idq.d+=IdqBuff[i].d;
-                    Idq.q+=IdqBuff[i].q;
-                }
-                Idq.d/=CURRENT_MEASURE_COUNT;
-                Idq.q/=CURRENT_MEASURE_COUNT;
-                i=0;
-            }*/
             currentA=ADC1->JDR1-phaseAOffsetFactor;
             currentC=ADC2->JDR1-phaseCOffsetFactor;
             Ia=ADC_TO_AMP*currentA;
             Ic=ADC_TO_AMP*currentC;
             Ib=-Ia-Ic;
             I_alpha_betta.alpha=Ia;
-            I_alpha_betta.betta=(Ia+2*Ib)/SQRT_3;
+            I_alpha_betta.betta=-(Ia+2*Ib)/SQRT_3;
             rotorElAngle=getAngle();
             cosElAngle=getCosElAngle();
             sinElAngle=getSinElAngle();
-            //.d=I_alpha_betta.alpha*cosElAngle+I_alpha_betta.betta*sinElAngle;
-            //Idq.q=I_alpha_betta.betta*cosElAngle-I_alpha_betta.alpha*sinElAngle;
-            //Idq.d=I_alpha_betta.alpha*sinElAngle+I_alpha_betta.betta*cosElAngle;
-            //Idq.q=I_alpha_betta.alpha*cosElAngle-I_alpha_betta.betta*sinElAngle;
-            Idq.d=Ia;
-            Idq.q=-Ia-Ic;
-            //currentLoop(direction*Idq.d,direction*Idq.q,rotorElAngle);
+            Idq.d=I_alpha_betta.alpha*sinElAngle+I_alpha_betta.betta*cosElAngle;
+            Idq.q=I_alpha_betta.alpha*cosElAngle-I_alpha_betta.betta*sinElAngle;
+            //Idq.d=Ia;
+            //Idq.q=-Ia-Ic;
             if(fabs(Ia)>=CURRENT_LIM || fabs(Ib)>=CURRENT_LIM || fabs(Ic)>=CURRENT_LIM)
             {
                 PWMStop();  
                 stopSpeedLoop(); 
             }
+            currentLoop(Idq.d,Idq.q,rotorElAngle);
         }
     }
 }

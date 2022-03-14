@@ -26,11 +26,10 @@ int main(void)
     speedLoopTimerInit();
     temp=sizeof(float);
     GPIOB->MODER|= GPIO_MODER_MODER5_0;
-    //PWMStart();
     while(1)
     {
         speed=(int16_t)(getSpeed());
-        Id=(int16_t)(Idq.d*1000);
+        Id=(int16_t)(getReferenceTorque()*1000);
         Iq=(int16_t)(Idq.q*1000);
         Ud=(int16_t)(Us.d*1000);
         Uq=(int16_t)(Us.q*1000);

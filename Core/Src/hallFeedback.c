@@ -68,7 +68,7 @@ static float hallGetAngle(uint8_t ha,uint8_t hb,uint8_t hc)
 			if(prevHallState==2)
 			{
 				direction=1;
-				angle=OFFSET_ANGLE_RAD-2*DEG_60;
+				angle=OFFSET_ANGLE_RAD+4*DEG_60;
 			}
 			else if(prevHallState==4)
 			{
@@ -80,7 +80,7 @@ static float hallGetAngle(uint8_t ha,uint8_t hb,uint8_t hc)
 			if(prevHallState==6)
 			{
 				direction=1;
-				angle=OFFSET_ANGLE_RAD-DEG_60;
+				angle=OFFSET_ANGLE_RAD+5*DEG_60;
 			}
 			else if(prevHallState==5)
 			{

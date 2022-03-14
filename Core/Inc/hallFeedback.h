@@ -4,7 +4,7 @@
 #include "main.h"
 
 #define HALL_FILTER 5
-#define HALL_MEASURE_COUNT 15
+#define HALL_MEASURE_COUNT 5
 #define POLE_PAIRS 12
 
 #define MIN_SPEED_RPM 5;
