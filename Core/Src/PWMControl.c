@@ -8,8 +8,6 @@ void PWMInit(void)
     GPIOA->AFR[0] |= 6<<GPIO_AFRL_AFRL7_Pos;
     GPIOA->AFR[1] |= 6<<GPIO_AFRH_AFRH0_Pos | 6<<GPIO_AFRH_AFRH1_Pos | 6<<GPIO_AFRH_AFRH2_Pos;
     GPIOB->AFR[0] |= 6<<GPIO_AFRL_AFRL0_Pos | 6<<GPIO_AFRL_AFRL1_Pos;
-    //GPIOA->OSPEEDR |= GPIO_OSPEEDER_OSPEEDR7 | GPIO_OSPEEDER_OSPEEDR8 | GPIO_OSPEEDER_OSPEEDR9 | GPIO_OSPEEDER_OSPEEDR10;
-    //GPIOB->OSPEEDR |= GPIO_OSPEEDER_OSPEEDR0 | GPIO_OSPEEDER_OSPEEDR1;
     RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;
     TIM1->CR1 |= TIM_CR1_CMS_0;//Central align mode;
     TIM1->CCMR1 |= 0x06<<TIM_CCMR1_OC1M_Pos | 0x06<<TIM_CCMR1_OC2M_Pos | TIM_CCMR1_OC1PE | TIM_CCMR1_OC2PE;
@@ -26,7 +24,7 @@ void PWMInit(void)
 
 void PWMStart(void)
 {
-	regulatorClear();
+	
     TIM1->CCR1=0;
 	TIM1->CCR2=0;
 	TIM1->CCR3=0;
@@ -54,8 +52,7 @@ void PWMStop(void)
 	R_BL;
 	R_CH;
 	R_CL;
-    TIM1->CR1&=~TIM_CR1_CEN;
-	
+    TIM1->CR1&=~TIM_CR1_CEN;	
 }
 
 void SVPWM_realise_dq(float ud,float uq,float tetta,float Ud)

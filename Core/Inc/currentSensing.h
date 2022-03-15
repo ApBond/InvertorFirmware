@@ -9,6 +9,7 @@
 
 #define CURRENT_LIM 15
 
+
 typedef enum
 {
  ADC_OK,
@@ -22,14 +23,22 @@ typedef struct
     float betta;
 }alpha_betta_t;
 
-typedef struct 
+typedef struct
+{
+    float a;
+    float b;
+    float c;
+}abc_t;
+
+struct d_q_t 
 {
     float d;
     float q;
-}d_q_t;
-
+};
 
 
 ADC_state_t ADCInit(void);
+abc_t getCurrentIabc(void);
+struct d_q_t getCurrentIdq(void);
 
 #endif

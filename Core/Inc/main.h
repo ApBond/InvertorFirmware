@@ -8,16 +8,12 @@
 #include "currentSensing.h"
 #include "control.h"
 #include "PWMControl.h"
+#include "userCommunication.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
-
-
-
-
-
-
+#define COMMUNICATE_PERIOD 2
 
 
 #endif

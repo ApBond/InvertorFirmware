@@ -5,7 +5,7 @@ static float mSpeed;
 static float sinElAngle=0;
 static float cosElAngle=0;
 int8_t direction=0;
-extern d_q_t Idq;
+extern struct d_q_t Idq;
 
 
 
@@ -88,6 +88,8 @@ static float hallGetAngle(uint8_t ha,uint8_t hb,uint8_t hc)
 				angle=OFFSET_ANGLE_RAD;
 			}
 			break;
+		default:
+			setErrorState(HALL_ERROR);
 	}
 	prevHallState=hallState;
 	return angle;
@@ -148,6 +150,8 @@ void TIM2_IRQHandler(void)
 			elPeriod=speedBuff/HALL_MEASURE_COUNT;
 			mPeriod=elPeriod*6/POLE_PAIRS;
 			mSpeed=(float)direction*(60*72000000/mPeriod);
+			if(mSpeed>MAX_SPEED_RPM)
+				setErrorState(SPEED_ERROR);
 			angleInterpolPeriod=(uint32_t)((float)elPeriod*d_ANGLE_RAD/(500*PI_3));
 			TIM3->CR1&=~TIM_CR1_CEN; 
 			TIM3->CNT=0;

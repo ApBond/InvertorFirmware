@@ -13,7 +13,7 @@
 
 #define CAN_MAX_INIT_TIME_MS 1000
 #define CAN_DATA_LENGTH 8
-#define CAN_RECIVE_BUFFER_SIZE 5
+#define CAN_RECIVE_BUFFER_SIZE 50
 
 typedef enum
 {

@@ -1,18 +1,12 @@
 #include "currentSensing.h"
 #include <math.h>
 
-int16_t currentA=0;
-int16_t currentC=0;
-int16_t currentB=0;
-float Ia=0;
-float Ic=0;
-float Ib=0;
-d_q_t Idq;
+static abc_t Iabc;
+static struct d_q_t Idq;
 static ADC_state_t ADCstate;
 static uint32_t phaseAOffsetFactor;
 static uint32_t phaseBOffsetFactor;
 static uint32_t phaseCOffsetFactor;
-extern int8_t direction;
 
 static void ADCGpioInit(void)
 {
@@ -22,11 +16,14 @@ static void ADCGpioInit(void)
 void ADC1_2_IRQHandler(void)
 {
     static uint16_t i;
+    int16_t currentA=0;
+    int16_t currentC=0;
+    int16_t currentB=0;
     alpha_betta_t I_alpha_betta;
     float rotorElAngle;
     float cosElAngle;
     float sinElAngle;
-    static d_q_t IdqBuff[CURRENT_MEASURE_COUNT];
+    static struct d_q_t IdqBuff[CURRENT_MEASURE_COUNT];
     if(ADC1->ISR & ADC_ISR_JEOC)
     {
         ADC1->ISR|=ADC_ISR_JEOC;
@@ -49,11 +46,11 @@ void ADC1_2_IRQHandler(void)
         {
             currentA=ADC1->JDR1-phaseAOffsetFactor;
             currentC=ADC2->JDR1-phaseCOffsetFactor;
-            Ia=ADC_TO_AMP*currentA;
-            Ic=ADC_TO_AMP*currentC;
-            Ib=-Ia-Ic;
-            I_alpha_betta.alpha=Ia;
-            I_alpha_betta.betta=-(Ia+2*Ib)/SQRT_3;
+            Iabc.a=ADC_TO_AMP*currentA;
+            Iabc.c=ADC_TO_AMP*currentC;
+            Iabc.b=-Iabc.a-Iabc.c;
+            I_alpha_betta.alpha=Iabc.a;
+            I_alpha_betta.betta=-(Iabc.a+2*Iabc.b)/SQRT_3;
             rotorElAngle=getAngle();
             cosElAngle=getCosElAngle();
             sinElAngle=getSinElAngle();
@@ -61,10 +58,9 @@ void ADC1_2_IRQHandler(void)
             Idq.q=I_alpha_betta.alpha*cosElAngle-I_alpha_betta.betta*sinElAngle;
             //Idq.d=Ia;
             //Idq.q=-Ia-Ic;
-            if(fabs(Ia)>=CURRENT_LIM || fabs(Ib)>=CURRENT_LIM || fabs(Ic)>=CURRENT_LIM)
+            if(fabs(Iabc.a)>=CURRENT_LIM || fabs(Iabc.b)>=CURRENT_LIM || fabs(Iabc.c)>=CURRENT_LIM)
             {
-                PWMStop();  
-                stopSpeedLoop(); 
+                setErrorState(OVERCURRENT_ERROR);
             }
             currentLoop(Idq.d,Idq.q,rotorElAngle);
         }
@@ -121,4 +117,14 @@ ADC_state_t ADCInit(void)
     ADC1->JSQR |= 8<<ADC_JSQR_JEXTSEL_Pos | ADC_JSQR_JEXTEN_0 ;//Enable TIM1 CCR4 trigger 
     ADC1->CR |= ADC_CR_JADSTART;
     return ADC_OK;
+}
+
+abc_t getCurrentIabc(void)
+{
+    return Iabc;
+}
+
+struct d_q_t getCurrentIdq(void)
+{
+    return Idq;
 }

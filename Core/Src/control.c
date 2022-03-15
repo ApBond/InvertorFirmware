@@ -1,7 +1,8 @@
 #include "control.h"
     
-d_q_t Us;
-
+static struct d_q_t Us;
+static FOC_Error_t errorState = NOT_ERROR;
+static FOC_Mode_t controleMode = SPEED_CONTROL;
 static float referenceSpeed=40;
 static float referenceTorque=0;
 
@@ -32,15 +33,11 @@ PIDHandle_t speedLoopPID=
     .integralTerm=0
 };
 
-extern float Ia;
-extern float Ic;
-extern float Ib;
-
-d_q_t circleLimitation(d_q_t vector)
+struct d_q_t circleLimitation(struct d_q_t vector)
 {
     float U = vector.d*vector.d+vector.q*vector.q;
     float sqrtU;
-    d_q_t rez;
+    struct d_q_t rez;
     if(U>1)
     {
         sqrtU=sqrt(U);
@@ -53,7 +50,7 @@ d_q_t circleLimitation(d_q_t vector)
 
 void currentLoop(float Id,float Iq,float rotorElAngle)
 {
-    d_q_t Is;
+    struct d_q_t Is;
     alpha_betta_t I_alpha_betta;
     Us.d = PIDController(&idLoopPID,0-Id);
     Us.q = PIDController(&iqLoopPID,referenceTorque-Iq);
@@ -66,14 +63,8 @@ void speedLoop(void)
     float torque;
     referenceTorque=PIDController(&speedLoopPID,referenceSpeed-getSpeed());
     //referenceTorque=2;
-    //setReferenceTorque(torque);
-    
+    //setReferenceTorque(torque);   
 }
-
-// d_q_t circleLimitation(d_q_t vector)
-// {
-
-// }
 
 void regulatorClear(void)
 {
@@ -87,21 +78,21 @@ void regulatorClear(void)
 
 void speedLoopTimerInit(void)
 {
-    RCC->APB2ENR |= RCC_APB2ENR_TIM16EN;
-    TIM16->PSC = 7200-1;
-    TIM16->ARR = SPEED_LOOP_TIM_ARR-1;
-    TIM16->DIER |= TIM_DIER_UIE;
-    NVIC_EnableIRQ(TIM16_IRQn);
+    RCC->APB2ENR |= RCC_APB2ENR_TIM15EN;
+    TIM15->PSC = 7200-1;
+    TIM15->ARR = SPEED_LOOP_TIM_ARR-1;
+    TIM15->DIER |= TIM_DIER_UIE;
+    NVIC_EnableIRQ(TIM15_IRQn);
 }
 
 void startSpeedLoop(void)
 {
-    TIM16->CR1 |= TIM_CR1_CEN;
+    TIM15->CR1 |= TIM_CR1_CEN;
 }
 
 void stopSpeedLoop(void)
 {
-    TIM16->CR1&=~TIM_CR1_CEN;
+    TIM15->CR1&=~TIM_CR1_CEN;
 }
 
 void setReferenceSpeed(float speed)
@@ -129,11 +120,21 @@ float getReferenceTorque(void)
     return referenceTorque;
 }
 
-void TIM16_IRQHandler(void)
+float getReferenceSpeed(void)
 {
-    if(TIM16->SR & TIM_SR_UIF)
+    return referenceSpeed;
+}
+
+struct d_q_t getControllImpact(void)
+{
+    return Us;
+}
+
+void TIM15_IRQHandler(void)
+{
+    if(TIM15->SR & TIM_SR_UIF)
     {
-        TIM16->SR &=~TIM_SR_UIF;
+        TIM15->SR &=~TIM_SR_UIF;
         speedLoop();
     }
 }
@@ -146,4 +147,59 @@ float PIDController(PIDHandle_t * PID,float error)
     PID->integralTerm+=error;
     controllerOut=error*PID->kp+PID->integralTerm*PID->ki+deltaError*PID->kd;
     return controllerOut;
+}
+
+void motorStart(void)
+{
+    if(errorState==NOT_ERROR)
+    {
+        if(controleMode==SPEED_CONTROL)
+        {
+            regulatorClear();
+            PWMStart();
+            startSpeedLoop();
+        }
+        else if (controleMode==TORQUE_CONTROL)
+        {
+            regulatorClear();
+            PWMStart();
+        }
+    }
+}
+
+void motorStop(void)
+{
+    PWMStop();  
+    stopSpeedLoop(); 
+    regulatorClear();
+}
+
+void setControlMode(FOC_Mode_t mode)
+{
+    controleMode=mode;
+}
+
+void setPIDSettings(Controller_type_t type,PIDHandle_t controller)
+{
+    switch(type)
+    {
+        case SPEED_PID:
+            speedLoopPID=controller;
+            break;
+        case ID_PID:
+            idLoopPID=controller;
+            break;
+        case IQ_PID:
+            iqLoopPID=controller;
+            break;
+    }
+}
+
+void setErrorState(FOC_Error_t error)
+{
+    errorState=NOT_ERROR;
+    if(error!=NOT_ERROR)
+    {
+        motorStop();
+    }
 }
