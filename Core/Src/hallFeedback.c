@@ -183,6 +183,7 @@ void TIM17_IRQHandler(void)
 		TIM17->SR&=~TIM_SR_UIF;
 		mSpeed=0;
 		TIM3->CR1&=~TIM_CR1_CEN; 
+		hallInitAngle((GPIOA->IDR&(1<<0)),((GPIOB->IDR&(1<<3))>>3),((GPIOA->IDR&(1<<2))>>2));
 	}
 }
 

@@ -27,3 +27,58 @@ void sendDiagnosticData(void)
     data[7]=Iq >> 8;
     canWrite(data,8,10);
 }
+
+void userCommunicationProcess(void)
+{
+    can_recive_message_t* reciveData;
+    int16_t temp16;
+    int32_t temp32;
+    reciveData=canRead();
+    if(reciveData!=0)
+    {
+        if(reciveData->messageId == BROADCAST_ID || reciveData->messageId == INDIVIDUAL_ID1 ||reciveData->messageId == INDIVIDUAL_ID2)
+        {
+            switch (reciveData->data[0])
+            {
+            case ALL_RESET:
+                break;
+            case START_STOP_DRIVE:
+                if(reciveData->data[1]==MOTOR_START)
+                    motorStart();
+                else if(reciveData->data[1]==MOTOR_STOP)
+                    motorStop();
+                break;
+            case CHANGE_MODE:
+                if(reciveData->data[1]=TORQUE_MODE)
+                    setControlMode(TORQUE_CONTROL);
+                else if(reciveData->data[1]=SPEED_MODE)
+                    setControlMode(SPEED_CONTROL);
+                break;
+            case CHANGE_SPEED:
+                temp16 =reciveData->data[1]+((reciveData->data[2])<<8);
+                setReferenceSpeed((float)temp16);
+                break;
+            case CHANGE_TORQUE:
+                temp32 = (reciveData->data[1]) + (reciveData->data[2]<<8) + (reciveData->data[3]<<16) + (reciveData->data[4]<<24);
+                setReferenceTorque((float)temp32/65535);
+                break;
+            case CHANGE_ANGLE:
+                break;
+            default:
+                break;
+            }
+        }
+        else if(reciveData->messageId == SET_VECTOR_ID)
+        {
+            rcCommand_t cmd;
+            float refSpeed;
+            float refAngle[4];
+            cmd.V = (reciveData->data[0] + (reciveData->data[1]<<8))/1024;
+            cmd.gam = (reciveData->data[2] + (reciveData->data[3]<<8))/1024;
+            cmd.R = (reciveData->data[4] + (reciveData->data[5]<<8) + (reciveData->data[6]<<16) + (reciveData->data[7]<<24))/65535;
+            kinematica(cmd,&refSpeed,refAngle);
+            setReferenceSpeed(refSpeed);
+            setServoAngle(refAngle);
+        }
+    }
+}

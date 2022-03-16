@@ -44,6 +44,8 @@ core/Src/hallFeedback.c \
 core/Src/PWMControl.c \
 core/Src/currentSensing.c \
 core/Src/userCommunication.c \
+core/Src/kinematic.c \
+core/Src/servoControl.c \
 Core/Src/system_stm32f3xx.c  
 
 # ASM sources

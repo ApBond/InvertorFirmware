@@ -9,6 +9,7 @@
 #include "control.h"
 #include "PWMControl.h"
 #include "userCommunication.h"
+#include "kinematic.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

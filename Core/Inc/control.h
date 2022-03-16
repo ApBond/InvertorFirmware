@@ -7,7 +7,7 @@
 #define SPEED_LOOP_TIM_ARR 5
 
 
-#define MAX_SPEED_RPM 200
+#define MAX_SPEED_RPM 500
 #define MAX_TORQUE_AMP 15
 
 

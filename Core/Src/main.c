@@ -24,8 +24,7 @@ void timer6Init(void)
 int main(void)
 {
     uint8_t i;
-    uint16_t filter[]={0x1,0x2,0x3,0x4};
-    can_recive_message_t* reciveData;
+    uint16_t filter[]={BROADCAST_ID,SET_VECTOR_ID,INDIVIDUAL_ID1,INDIVIDUAL_ID2};
     while(RccClockInit()!=READY);
     delayInit();
     canInit(0x011c0008);
@@ -40,21 +39,8 @@ int main(void)
         if(communicateProcessTimer>=COMMUNICATE_PERIOD)
         {
             sendDiagnosticData();
-            reciveData=canRead();
-            if(reciveData!=0)
-            {
-                if(reciveData->messageId==0x01 && reciveData->data[0]==1)
-                {
-                    PWMStart(); 
-                    startSpeedLoop();
-                }
-                if(reciveData->messageId==0x01 && reciveData->data[0]==0)
-                {
-                    PWMStop();  
-                    stopSpeedLoop(); 
-                }
-            }
             communicateProcessTimer=0;
         }
+        userCommunicationProcess();
     }
 }

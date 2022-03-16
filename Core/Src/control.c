@@ -99,7 +99,7 @@ void setReferenceSpeed(float speed)
 {
     if(speed>=MAX_SPEED_RPM)
         referenceSpeed=MAX_SPEED_RPM;
-    else if (-1*MAX_SPEED_RPM<=speed)
+    else if (speed<=-1*MAX_SPEED_RPM)
         referenceSpeed=-1*MAX_SPEED_RPM;
     else
         referenceSpeed=speed;
