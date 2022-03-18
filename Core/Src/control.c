@@ -5,6 +5,7 @@ static FOC_Error_t errorState = NOT_ERROR;
 static FOC_Mode_t controleMode = SPEED_CONTROL;
 static float referenceSpeed=40;
 static float referenceTorque=0;
+static Motor_state_t motorState = MS_STOP;
 
 PIDHandle_t idLoopPID=
 {
@@ -151,8 +152,9 @@ float PIDController(PIDHandle_t * PID,float error)
 
 void motorStart(void)
 {
-    if(errorState==NOT_ERROR)
+    if(errorState==NOT_ERROR && motorState==MS_STOP)
     {
+        motorState=MS_RUN;
         if(controleMode==SPEED_CONTROL)
         {
             regulatorClear();
@@ -169,6 +171,7 @@ void motorStart(void)
 
 void motorStop(void)
 {
+    motorState=MS_STOP;
     PWMStop();  
     stopSpeedLoop(); 
     regulatorClear();
@@ -197,9 +200,14 @@ void setPIDSettings(Controller_type_t type,PIDHandle_t controller)
 
 void setErrorState(FOC_Error_t error)
 {
-    errorState=NOT_ERROR;
+    errorState=error;
     if(error!=NOT_ERROR)
     {
         motorStop();
     }
+}
+
+Motor_state_t getMotorState(void)
+{
+    return motorState;
 }

@@ -34,6 +34,10 @@ int main(void)
     PWMInit();
     speedLoopTimerInit();
     timer6Init();
+
+    //tim16Init();
+    //I2CInit();
+    //DMAInit();
     while(1)
     {
         if(communicateProcessTimer>=COMMUNICATE_PERIOD)

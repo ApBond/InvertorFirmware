@@ -47,6 +47,12 @@ struct d_q_t1
     float q;
 };
 
+typedef enum
+{
+    MS_RUN,
+    MS_STOP
+}Motor_state_t;
+
 float PIDController(PIDHandle_t * PID,float error);
 void currentLoop(float Id,float Iq,float rotorElAngle);
 void regulatorClear(void);
@@ -64,5 +70,6 @@ void motorStop(void);
 void setControlMode(FOC_Mode_t mode);
 void setPIDSettings(Controller_type_t type,PIDHandle_t controller);
 void setErrorState(FOC_Error_t error);
+Motor_state_t getMotorState(void);
 
 #endif

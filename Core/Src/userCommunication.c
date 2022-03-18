@@ -41,6 +41,7 @@ void userCommunicationProcess(void)
             switch (reciveData->data[0])
             {
             case ALL_RESET:
+                setErrorState(NOT_ERROR);
                 break;
             case START_STOP_DRIVE:
                 if(reciveData->data[1]==MOTOR_START)
@@ -73,12 +74,13 @@ void userCommunicationProcess(void)
             rcCommand_t cmd;
             float refSpeed;
             float refAngle[4];
-            cmd.V = (reciveData->data[0] + (reciveData->data[1]<<8))/1024;
-            cmd.gam = (reciveData->data[2] + (reciveData->data[3]<<8))/1024;
-            cmd.R = (reciveData->data[4] + (reciveData->data[5]<<8) + (reciveData->data[6]<<16) + (reciveData->data[7]<<24))/65535;
+            cmd.V = (float)((int16_t)(reciveData->data[0] + (reciveData->data[1]<<8)))/2048;
+            cmd.gam = (float)((int16_t)(reciveData->data[2] + (reciveData->data[3]<<8)))/2048;
+            cmd.R = (float)(int32_t)((reciveData->data[4] + (reciveData->data[5]<<8) + (reciveData->data[6]<<16) + (reciveData->data[7]<<24)))/65535;
             kinematica(cmd,&refSpeed,refAngle);
-            setReferenceSpeed(refSpeed);
             setServoAngle(refAngle);
+            setReferenceSpeed(refSpeed);
+            
         }
     }
 }
