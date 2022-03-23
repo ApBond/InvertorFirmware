@@ -84,6 +84,7 @@ void speedLoopTimerInit(void)
     TIM15->ARR = SPEED_LOOP_TIM_ARR-1;
     TIM15->DIER |= TIM_DIER_UIE;
     NVIC_EnableIRQ(TIM15_IRQn);
+    NVIC_SetPriority(TIM15_IRQn,1);
 }
 
 void startSpeedLoop(void)

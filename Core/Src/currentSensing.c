@@ -107,6 +107,7 @@ ADC_state_t ADCInit(void)
     ADC2->JSQR |= 2 << ADC_JSQR_JSQ1_Pos;
     ADC1->IER |= ADC_IER_JEOCIE;// Enable ADC1(master) injected convertion interrupt 
     NVIC_EnableIRQ(ADC1_2_IRQn); 
+    NVIC_SetPriority(ADC1_2_IRQn,0);
     delay_ms(10);//Wait for ADC enable
     ADCstate=ADC_CALIBRATION;//Start measuring offset voltage
     ADC1->CR |= ADC_CR_JADSTART;

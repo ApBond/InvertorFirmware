@@ -1,6 +1,7 @@
 #include "main.h"
 
 static uint16_t communicateProcessTimer=0;
+static uint16_t testTimer=0;
 
 void TIM6_DAC1_IRQHandler(void)
 {
@@ -8,6 +9,7 @@ void TIM6_DAC1_IRQHandler(void)
     {
         TIM6->SR &=~TIM_SR_UIF;
         communicateProcessTimer++;
+        testTimer++;
     }
 }
 
@@ -35,8 +37,8 @@ int main(void)
     speedLoopTimerInit();
     timer6Init();
 
-    //tim16Init();
-    //I2CInit();
+    tim16Init();
+    I2CInit();
     //DMAInit();
     while(1)
     {
@@ -44,6 +46,11 @@ int main(void)
         {
             sendDiagnosticData();
             communicateProcessTimer=0;
+        }
+        if(testTimer>=1000)
+        {
+            I2C_Receiver(0x48,2);
+            testTimer=0;
         }
         userCommunicationProcess();
     }

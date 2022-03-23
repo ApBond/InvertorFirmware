@@ -216,10 +216,11 @@ void hallTimInit(void)
     NVIC_EnableIRQ(TIM3_IRQn);
 
     NVIC_SetPriority(TIM2_IRQn,0);
-    NVIC_SetPriority(TIM3_IRQn,1);
+    NVIC_SetPriority(TIM3_IRQn,0);
+	NVIC_SetPriority(TIM17_IRQn,0);
 
 	GPIOA->PUPDR |= GPIO_PUPDR_PUPDR0_1 | GPIO_PUPDR_PUPDR2_1;
-	//GPIOA->PUPDR |= GPIO_PUPDR_PUPDR1_1;
+	//GPIOB->PUPDR |= GPIO_PUPDR_PUPDR3_1;
 }
 
 float getSpeed(void)
