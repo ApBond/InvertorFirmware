@@ -212,3 +212,8 @@ Motor_state_t getMotorState(void)
 {
     return motorState;
 }
+
+FOC_Error_t getErrorState(void)
+{
+    return errorState;
+}

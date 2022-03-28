@@ -153,7 +153,7 @@ void I2C_Transfer(uint8_t addr, uint8_t num_bytes, uint8_t *data){
 	}
 	i2c_transmit_counter=0;
 	I2C1->CR2|=addr<<1 | num_bytes<<16 | I2C_CR2_START;
-	while(!(I2C1->ISR & I2C_ISR_TXE));
+	//while(!(I2C1->ISR & I2C_ISR_TXE));
 	I2C1->TXDR=i2c_transmit_buffer[i2c_transmit_counter];
 }
 

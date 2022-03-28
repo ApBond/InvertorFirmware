@@ -70,6 +70,7 @@ void motorStop(void);
 void setControlMode(FOC_Mode_t mode);
 void setPIDSettings(Controller_type_t type,PIDHandle_t controller);
 void setErrorState(FOC_Error_t error);
+FOC_Error_t getErrorState(void);
 Motor_state_t getMotorState(void);
 
 #endif

@@ -28,15 +28,23 @@ void sendDiagnosticData(void)
     canWrite(data,8,10);
 }
 
+void sendErrorState(void)
+{
+    FOC_Error_t error;
+    error=getErrorState();
+    canWrite((uint8_t*)&error,1,ERROR_CHANNEL_ID);
+}
+
 void userCommunicationProcess(void)
 {
     can_recive_message_t* reciveData;
     int16_t temp16;
     int32_t temp32;
+    FOC_Error_t error;
     reciveData=canRead();
     if(reciveData!=0)
     {
-        if(reciveData->messageId == BROADCAST_ID || reciveData->messageId == INDIVIDUAL_ID1 ||reciveData->messageId == INDIVIDUAL_ID2)
+        if(reciveData->messageId == BROADCAST_ID || reciveData->messageId == INDIVIDUAL_ID1)
         {
             switch (reciveData->data[0])
             {
@@ -81,6 +89,11 @@ void userCommunicationProcess(void)
             setServoAngle(refAngle);
             setReferenceSpeed(refSpeed);
             
+        }
+        else if(reciveData->messageId == ERROR_CHANNEL_ID)
+        {
+            error = reciveData->data[0];
+            setErrorState(error);
         }
     }
 }

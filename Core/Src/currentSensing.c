@@ -61,6 +61,7 @@ void ADC1_2_IRQHandler(void)
             if(fabs(Iabc.a)>=CURRENT_LIM || fabs(Iabc.b)>=CURRENT_LIM || fabs(Iabc.c)>=CURRENT_LIM)
             {
                 setErrorState(OVERCURRENT_ERROR);
+                //sendErrorState();
             }
             currentLoop(Idq.d,Idq.q,rotorElAngle);
         }

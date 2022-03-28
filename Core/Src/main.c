@@ -26,7 +26,7 @@ void timer6Init(void)
 int main(void)
 {
     uint8_t i;
-    uint16_t filter[]={BROADCAST_ID,SET_VECTOR_ID,INDIVIDUAL_ID1,INDIVIDUAL_ID2};
+    uint16_t filter[]={BROADCAST_ID,SET_VECTOR_ID,INDIVIDUAL_ID1,ERROR_CHANNEL_ID};
     while(RccClockInit()!=READY);
     delayInit();
     canInit(0x011c0008);
@@ -38,7 +38,7 @@ int main(void)
     timer6Init();
 
     tim16Init();
-    I2CInit();
+    //I2CInit();
     //DMAInit();
     while(1)
     {
@@ -49,7 +49,7 @@ int main(void)
         }
         if(testTimer>=1000)
         {
-            I2C_Receiver(0x48,2);
+            //I2C_Receiver(0x48,2);
             testTimer=0;
         }
         userCommunicationProcess();

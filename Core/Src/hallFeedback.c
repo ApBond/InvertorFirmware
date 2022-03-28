@@ -90,6 +90,8 @@ static float hallGetAngle(uint8_t ha,uint8_t hb,uint8_t hc)
 			break;
 		default:
 			setErrorState(HALL_ERROR);
+			//sendErrorState();
+			
 	}
 	prevHallState=hallState;
 	return angle;
@@ -151,7 +153,10 @@ void TIM2_IRQHandler(void)
 			mPeriod=elPeriod*6/POLE_PAIRS;
 			mSpeed=(float)direction*(60*72000000/mPeriod);
 			if(mSpeed>MAX_SPEED_RPM)
+			{
 				setErrorState(SPEED_ERROR);
+				//sendErrorState();
+			}
 			angleInterpolPeriod=(uint32_t)((float)elPeriod*d_ANGLE_RAD/(500*PI_3));
 			TIM3->CR1&=~TIM_CR1_CEN; 
 			TIM3->CNT=0;

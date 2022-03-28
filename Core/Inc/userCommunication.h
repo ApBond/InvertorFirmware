@@ -6,7 +6,7 @@
 #define BROADCAST_ID 0x01
 #define SET_VECTOR_ID 0x02
 #define INDIVIDUAL_ID1 0x101
-#define INDIVIDUAL_ID2 0x102
+#define ERROR_CHANNEL_ID 0x03
 
 #define ALL_RESET 0x00
 #define START_STOP_DRIVE 0x01
@@ -29,6 +29,6 @@ typedef enum{
 
 void sendDiagnosticData(void);
 void userCommunicationProcess(void);
-
+void sendErrorState(void);
 
 #endif
