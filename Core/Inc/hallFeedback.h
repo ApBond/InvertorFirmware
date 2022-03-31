@@ -3,17 +3,19 @@
 
 #include "main.h"
 
-#define HALL_FILTER 5
+#define HALL_FILTER 0X7
 #define HALL_MEASURE_COUNT 5
 #define POLE_PAIRS 12
 
-#define MIN_SPEED_RPM 5;
+#define MIN_SPEED_RPM 5
 
 #define d_ANGLE 1
 #define d_ANGLE_RAD d_ANGLE*0.017453
 
 #define OFFSET_ANGLE_DEG 0
 #define OFFSET_ANGLE_RAD OFFSET_ANGLE_DEG*0.017453
+
+#define HALL_ERROR_COUNT 1
 
 #define SQRT_3 1.7320508
 #define PI 3.1415926

@@ -3,8 +3,8 @@
 
 #include "main.h"
 
-#define REDUCTOR 1 //30
-#define RESOLUTION 200
+#define REDUCTOR 20 //30
+#define RESOLUTION 800
 
 uint8_t calibration();
 void tim16Init(void);

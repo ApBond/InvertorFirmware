@@ -3,23 +3,23 @@
 static struct d_q_t Us;
 static FOC_Error_t errorState = NOT_ERROR;
 static FOC_Mode_t controleMode = SPEED_CONTROL;
-static float referenceSpeed=40;
+static float referenceSpeed=0;
 static float referenceTorque=0;
 static Motor_state_t motorState = MS_STOP;
 
 PIDHandle_t idLoopPID=
 {
     .kp=0.004,
-    .ki=0.000008,
+    .ki=0.000003,
     .kd=0,
     .prevError=0,
     .integralTerm=0
 };
 
 PIDHandle_t iqLoopPID=
-{
+{ 
     .kp=0.004,
-    .ki=0.000008,
+    .ki=0.000003,
     . kd=0,
     .prevError=0,
     .integralTerm=0
@@ -111,7 +111,7 @@ void setReferenceTorque(float torque)
 {
     if(torque>=MAX_TORQUE_AMP)
         referenceTorque=MAX_TORQUE_AMP;
-    else if (-1*MAX_TORQUE_AMP<=torque)
+    else if (torque<=-1*MAX_TORQUE_AMP)
         referenceTorque=-1*MAX_TORQUE_AMP;
     else
         referenceTorque=torque;

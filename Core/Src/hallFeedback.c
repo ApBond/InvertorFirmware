@@ -6,14 +6,22 @@ static float sinElAngle=0;
 static float cosElAngle=0;
 int8_t direction=0;
 extern struct d_q_t Idq;
+static uint8_t hallMeasureCount=HALL_MEASURE_COUNT;
 
 
 
 static float hallGetAngle(uint8_t ha,uint8_t hb,uint8_t hc)
 {
+	static errorCount=0;
 	static uint8_t prevHallState=0;
 	float angle=0;
 	uint8_t hallState=hc<<2 | hb<<1 | ha;
+	/*if(prevHallState==0)
+	{
+		hallInitAngle(ha,hb,hc);
+		prevHallState=hallState;
+		return elAngle;
+	}*/
 	switch(hallState)
 	{
 		case 5:
@@ -61,7 +69,7 @@ static float hallGetAngle(uint8_t ha,uint8_t hb,uint8_t hc)
 			else if(prevHallState==6)
 			{
 				direction=-1;
-				angle=OFFSET_ANGLE_RAD-2*DEG_60;
+				angle=OFFSET_ANGLE_RAD+4*DEG_60;
 			}
 			break;
 		case 6:
@@ -73,7 +81,7 @@ static float hallGetAngle(uint8_t ha,uint8_t hb,uint8_t hc)
 			else if(prevHallState==4)
 			{
 				direction=-1;
-				angle=OFFSET_ANGLE_RAD-DEG_60;
+				angle=OFFSET_ANGLE_RAD+5*DEG_60;
 			}
 			break;
 		case 4:
@@ -89,17 +97,25 @@ static float hallGetAngle(uint8_t ha,uint8_t hb,uint8_t hc)
 			}
 			break;
 		default:
-			setErrorState(HALL_ERROR);
-			//sendErrorState();
-			
+			errorCount++;
+			if(errorCount==HALL_ERROR_COUNT)
+			{
+				setErrorState(HALL_ERROR);
+				errorCount=0;
+				sendErrorState();
+			}
+			prevHallState=0;
+			return 1;
 	}
 	prevHallState=hallState;
+	errorCount=0;
 	return angle;
 }
 
 void hallInitAngle(uint8_t ha,uint8_t hb,uint8_t hc)
 {
 	uint8_t hallState=hc<<2 | hb<<1 | ha;
+	hallMeasureCount=1;
 	switch(hallState)
 	{
 		case 5:
@@ -132,6 +148,7 @@ void TIM2_IRQHandler(void)
     uint32_t elPeriod;
     uint16_t angleInterpolPeriod;
     float mPeriod;
+	float elAngleTmp=0;
 	if(TIM2->SR & TIM_SR_CC1IF)
 	{
         TIM2->SR&=~TIM_SR_CC1IF;
@@ -141,7 +158,7 @@ void TIM2_IRQHandler(void)
 		cosElAngle=cosf(elAngle);
 		//currentLoop(Idq.d,Idq.q);
 		//SVPWM_realise_dq(UD,UQ,elAngle,U_SOURSE);	
-		if(state<HALL_MEASURE_COUNT-1)
+		if(state<hallMeasureCount-1)
 		{
 			speedBuff+=TIM2->CCR1;
 			state++;
@@ -149,13 +166,13 @@ void TIM2_IRQHandler(void)
 		else
 		{
 			speedBuff+=TIM2->CCR1;
-			elPeriod=speedBuff/HALL_MEASURE_COUNT;
+			elPeriod=speedBuff/hallMeasureCount;
 			mPeriod=elPeriod*6/POLE_PAIRS;
 			mSpeed=(float)direction*(60*72000000/mPeriod);
 			if(mSpeed>MAX_SPEED_RPM)
 			{
 				setErrorState(SPEED_ERROR);
-				//sendErrorState();
+				sendErrorState();
 			}
 			angleInterpolPeriod=(uint32_t)((float)elPeriod*d_ANGLE_RAD/(500*PI_3));
 			TIM3->CR1&=~TIM_CR1_CEN; 
@@ -164,6 +181,8 @@ void TIM2_IRQHandler(void)
 			TIM3->CR1|=TIM_CR1_CEN;
 			state=0;
 			speedBuff=0;
+			if(hallMeasureCount==1)
+				hallMeasureCount=HALL_MEASURE_COUNT;
 		}
 	}
 }
@@ -174,6 +193,10 @@ void TIM3_IRQHandler(void)
     {
         TIM3->SR&=~TIM_SR_UIF;
 		elAngle=elAngle+direction*d_ANGLE_RAD;
+		/*if(elAngle>6.28)
+			elAngle=0;
+		if(elAngle<0)
+			elAngle=6.28;*/
 		sinElAngle=sinf(elAngle);
 		cosElAngle=cosf(elAngle);
 		//currentLoop(Idq.d,Idq.q);
@@ -214,7 +237,7 @@ void hallTimInit(void)
     TIM3->PSC=500-1;
 	RCC->APB2ENR |= RCC_APB2ENR_TIM17EN;
 	TIM17->PSC=7200-1;
-	TIM17->ARR = 700;
+	TIM17->ARR = 500;
 	TIM17->DIER |= TIM_DIER_UIE;
 	TIM17->CR1|=TIM_CR1_CEN;
 	NVIC_EnableIRQ(TIM17_IRQn);
@@ -224,7 +247,7 @@ void hallTimInit(void)
     NVIC_SetPriority(TIM3_IRQn,0);
 	NVIC_SetPriority(TIM17_IRQn,0);
 
-	GPIOA->PUPDR |= GPIO_PUPDR_PUPDR0_1 | GPIO_PUPDR_PUPDR2_1;
+	//GPIOA->PUPDR |= GPIO_PUPDR_PUPDR0_1 | GPIO_PUPDR_PUPDR2_1;
 	//GPIOB->PUPDR |= GPIO_PUPDR_PUPDR3_1;
 }
 

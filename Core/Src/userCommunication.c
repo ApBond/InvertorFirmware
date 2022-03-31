@@ -10,11 +10,16 @@ void sendDiagnosticData(void)
     int16_t Uq;
     struct d_q_t Us;
     struct d_q_t Idq;
+    abc_t Iabc;
+    Iabc=getCurrentIabc();
+
     Us=getControllImpact();
     Idq=getCurrentIdq();
     speed=(int16_t)(getSpeed());
     Id=(int16_t)(getReferenceTorque()*1000);
     Iq=(int16_t)(Idq.q*1000);
+    //Id=(int16_t)(Iabc.a*1000);
+    //Iq=(int16_t)(Iabc.c*1000);
     Ud=(int16_t)(Us.d*1000);
     Uq=(int16_t)(Us.q*1000);
     data[0]=speed & 0xFF;
@@ -25,7 +30,12 @@ void sendDiagnosticData(void)
     data[5]=Id>>8;
     data[6]=Iq & 0xFF;
     data[7]=Iq >> 8;
-    canWrite(data,8,10);
+    canWrite(data,8,INDIVIDUAL_ID1);
+    data[0]=getErrorState();
+    data[1]=getMotorState();
+    canWrite(data,2,INDIVIDUAL_ID2);
+
+
 }
 
 void sendErrorState(void)
@@ -41,6 +51,7 @@ void userCommunicationProcess(void)
     int16_t temp16;
     int32_t temp32;
     FOC_Error_t error;
+    float refAngleTemp[4];
     reciveData=canRead();
     if(reciveData!=0)
     {
@@ -53,7 +64,10 @@ void userCommunicationProcess(void)
                 break;
             case START_STOP_DRIVE:
                 if(reciveData->data[1]==MOTOR_START)
+                {
+                    setErrorState(NOT_ERROR);
                     motorStart();
+                }
                 else if(reciveData->data[1]==MOTOR_STOP)
                     motorStop();
                 break;
@@ -72,6 +86,12 @@ void userCommunicationProcess(void)
                 setReferenceTorque((float)temp32/65535);
                 break;
             case CHANGE_ANGLE:
+                temp16=reciveData->data[1]+((reciveData->data[2])<<8);
+                refAngleTemp[0]=(float)((float)temp16*0.017);
+                refAngleTemp[1]=refAngleTemp[0];
+                refAngleTemp[2]=refAngleTemp[0];
+                refAngleTemp[3]=refAngleTemp[0];
+                setServoAngle(refAngleTemp);
                 break;
             default:
                 break;

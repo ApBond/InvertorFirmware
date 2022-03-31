@@ -14,7 +14,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define COMMUNICATE_PERIOD 2
+#define COMMUNICATE_PERIOD 5
 
 
 #endif

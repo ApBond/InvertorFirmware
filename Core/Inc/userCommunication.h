@@ -3,10 +3,11 @@
 
 #include "main.h"
 
-#define BROADCAST_ID 0x01
-#define SET_VECTOR_ID 0x02
-#define INDIVIDUAL_ID1 0x101
-#define ERROR_CHANNEL_ID 0x03
+#define BROADCAST_ID 1
+#define SET_VECTOR_ID 2
+#define INDIVIDUAL_ID1 101
+#define INDIVIDUAL_ID2 INDIVIDUAL_ID1*10
+#define ERROR_CHANNEL_ID 3
 
 #define ALL_RESET 0x00
 #define START_STOP_DRIVE 0x01

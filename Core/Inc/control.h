@@ -8,7 +8,7 @@
 
 
 #define MAX_SPEED_RPM 500
-#define MAX_TORQUE_AMP 15
+#define MAX_TORQUE_AMP 10
 
 
 typedef struct

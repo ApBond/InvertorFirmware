@@ -16,6 +16,7 @@ static void ADCGpioInit(void)
 void ADC1_2_IRQHandler(void)
 {
     static uint16_t i;
+    static uint16_t errorCounter;
     int16_t currentA=0;
     int16_t currentC=0;
     int16_t currentB=0;
@@ -60,8 +61,17 @@ void ADC1_2_IRQHandler(void)
             //Idq.q=-Ia-Ic;
             if(fabs(Iabc.a)>=CURRENT_LIM || fabs(Iabc.b)>=CURRENT_LIM || fabs(Iabc.c)>=CURRENT_LIM)
             {
-                setErrorState(OVERCURRENT_ERROR);
-                //sendErrorState();
+                if(errorCounter==100)
+                {
+                    setErrorState(OVERCURRENT_ERROR);
+                    errorCounter=0;
+                    sendErrorState();
+                }
+                errorCounter++;
+            }
+            else
+            {
+                errorCounter=0;
             }
             currentLoop(Idq.d,Idq.q,rotorElAngle);
         }
