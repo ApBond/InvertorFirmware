@@ -66,11 +66,11 @@ void setServoAngle(float* targetAngle){
 
 	if (pwm_aim[WHEEL]>pwm_count[WHEEL]) {//ch1
 		GPIOB->BSRR= GPIO_BSRR_BS_5;
-		TIM16->CCR1 = 100;
+		TIM16->CCR1 = 400;
 		d_pwm=1;
 	}
 	else if (pwm_aim[WHEEL]<pwm_count[WHEEL]) {
-		TIM16->CCR1 = 100;
+		TIM16->CCR1 = 400;
 		d_pwm=-1;
 		GPIOB->BSRR=GPIO_BSRR_BR_5;
 	}
@@ -103,7 +103,7 @@ void tim16Init(void)
 	RCC->APB2ENR |= RCC_APB2ENR_TIM16EN;
 	TIM16->CCER = 0;
 	TIM16->ARR = 150;
-	TIM16->PSC = 400-1;
+	TIM16->PSC = 50-1;
 	TIM16->BDTR |= TIM_BDTR_MOE;
 	TIM16->CCMR1 |= TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2;
 	TIM16->CCER |= TIM_CCER_CC1E;

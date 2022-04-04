@@ -24,9 +24,9 @@ typedef struct
     float gam;
 } driveControl_t;
 
-// #define FRONT_LEFT
+#define FRONT_LEFT
 //#define FRONT_RIGHT
- #define REAR_LEFT
+ //#define REAR_LEFT
 // #define REAR_RIGHT
 
 #define pi 3.14159265

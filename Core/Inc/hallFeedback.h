@@ -3,8 +3,8 @@
 
 #include "main.h"
 
-#define HALL_FILTER 0X7
-#define HALL_MEASURE_COUNT 5
+#define HALL_FILTER 0XF
+#define HALL_MEASURE_COUNT 15 
 #define POLE_PAIRS 12
 
 #define MIN_SPEED_RPM 5
