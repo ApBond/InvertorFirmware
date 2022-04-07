@@ -24,10 +24,7 @@ typedef struct
     float gam;
 } driveControl_t;
 
-#define FRONT_LEFT
-//#define FRONT_RIGHT
- //#define REAR_LEFT
-// #define REAR_RIGHT
+
 
 #define pi 3.14159265
 #define deg 57.29577951
@@ -43,18 +40,7 @@ typedef struct
 
 
 
-#ifdef FRONT_LEFT
-    #define WHEEL FL
-#endif
-#ifdef FRONT_RIGHT
-    #define WHEEL FR
-#endif 
-#ifdef REAR_LEFT
-    #define WHEEL RL
-#endif 
-#ifdef REAR_RIGHT
-    #define WHEEL RR
-#endif
+
 
 double sign(double a);
 int16_t intSign(double a);

@@ -40,6 +40,8 @@ int main(void)
     tim16Init();
     //I2CInit();
     //DMAInit();
+    //motorStart();
+
     while(1)
     {
         if(communicateProcessTimer>=COMMUNICATE_PERIOD)

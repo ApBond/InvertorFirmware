@@ -16,5 +16,28 @@
 
 #define COMMUNICATE_PERIOD 5
 
+#define FRONT_LEFT
+//#define FRONT_RIGHT
+ //#define REAR_LEFT
+// #define REAR_RIGHT
+
+#ifdef FRONT_LEFT
+    #define WHEEL FL
+    #define INDIVIDUAL_ID1 101
+#endif
+#ifdef FRONT_RIGHT
+    #define WHEEL FR
+    #define INDIVIDUAL_ID1 102
+#endif 
+#ifdef REAR_LEFT
+    #define WHEEL RL
+    #define INDIVIDUAL_ID1 103
+#endif 
+#ifdef REAR_RIGHT
+    #define WHEEL RR
+    #define INDIVIDUAL_ID1 104
+#endif
+
+#define INDIVIDUAL_ID2 INDIVIDUAL_ID1*10
 
 #endif
