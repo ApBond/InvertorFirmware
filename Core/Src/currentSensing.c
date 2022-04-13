@@ -61,7 +61,7 @@ void ADC1_2_IRQHandler(void)
             //Idq.q=-Ia-Ic;
             if(fabs(Iabc.a)>=CURRENT_LIM || fabs(Iabc.b)>=CURRENT_LIM || fabs(Iabc.c)>=CURRENT_LIM)
             {
-                if(errorCounter==100)
+                if(errorCounter==10)
                 {
                     setErrorState(OVERCURRENT_ERROR);
                     errorCounter=0;

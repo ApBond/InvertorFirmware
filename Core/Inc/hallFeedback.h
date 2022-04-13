@@ -4,10 +4,8 @@
 #include "main.h"
 
 #define HALL_FILTER 0XF
-#define HALL_MEASURE_COUNT 15 
+#define HALL_MEASURE_COUNT 3
 #define POLE_PAIRS 12
-
-#define MIN_SPEED_RPM 5
 
 #define d_ANGLE 1
 #define d_ANGLE_RAD d_ANGLE*0.017453

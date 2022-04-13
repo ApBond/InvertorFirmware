@@ -50,5 +50,8 @@ void kinematica(rcCommand_t cmd, float* Speed, float* targetAngle){
 	if (fabs(targetAngle[RL])<0.01) targetAngle[RL]=0;
 	if (fabs(targetAngle[RR])<0.01) targetAngle[RR]=0;
 
+	targetAngle[FR] = -targetAngle[FR];
+	targetAngle[RL] = -targetAngle[RL];
+
 	(*Speed)=(((cmd.V*60/r_wheel/2/pi)))*R[WHEEL]/Rm;
 }

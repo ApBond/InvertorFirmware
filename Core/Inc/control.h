@@ -8,6 +8,7 @@
 
 
 #define MAX_SPEED_RPM 500
+#define MIN_SPEED_RPM 5
 #define MAX_TORQUE_AMP 10
 
 

@@ -18,8 +18,8 @@
 
 #define FRONT_LEFT
 //#define FRONT_RIGHT
- //#define REAR_LEFT
-// #define REAR_RIGHT
+//#define REAR_LEFT
+//#define REAR_RIGHT
 
 #ifdef FRONT_LEFT
     #define WHEEL FL

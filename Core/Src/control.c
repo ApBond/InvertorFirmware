@@ -27,9 +27,9 @@ PIDHandle_t iqLoopPID=
 
 PIDHandle_t speedLoopPID=
 {
-    .kp=0.1,
-    .ki=0.00004,
-    . kd=0,
+    .kp=0.15,
+    .ki=0.00003,
+    .kd=0,
     .prevError=0,
     .integralTerm=0
 };
@@ -99,7 +99,13 @@ void stopSpeedLoop(void)
 
 void setReferenceSpeed(float speed)
 {
-    if(speed>=MAX_SPEED_RPM)
+
+    #ifndef FRONT_RIGHT
+        speed*=-1;
+    #endif
+    if(abs(speed)<MIN_SPEED_RPM)
+        referenceSpeed=0;
+    else if(speed>=MAX_SPEED_RPM)
         referenceSpeed=MAX_SPEED_RPM;
     else if (speed<=-1*MAX_SPEED_RPM)
         referenceSpeed=-1*MAX_SPEED_RPM;

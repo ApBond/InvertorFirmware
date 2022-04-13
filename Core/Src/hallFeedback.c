@@ -7,13 +7,13 @@ static float cosElAngle=0;
 int8_t direction=0;
 extern struct d_q_t Idq;
 static uint8_t hallMeasureCount=HALL_MEASURE_COUNT;
-
+static uint8_t startFlag=1;
+static uint8_t prevHallState=0;
 
 
 static float hallGetAngle(uint8_t ha,uint8_t hb,uint8_t hc)
 {
 	static errorCount=0;
-	static uint8_t prevHallState=0;
 	float angle=0;
 	uint8_t hallState=hc<<2 | hb<<1 | ha;
 	/*if(prevHallState==0)
@@ -139,6 +139,7 @@ void hallInitAngle(uint8_t ha,uint8_t hb,uint8_t hc)
 	}
 	sinElAngle=sinf(elAngle);
 	cosElAngle=cosf(elAngle);
+	prevHallState=hallState;
 }
 
 void TIM2_IRQHandler(void)
@@ -158,7 +159,9 @@ void TIM2_IRQHandler(void)
 		cosElAngle=cosf(elAngle);
 		//currentLoop(Idq.d,Idq.q);
 		//SVPWM_realise_dq(UD,UQ,elAngle,U_SOURSE);	
-		if(state<hallMeasureCount-1)
+		if(startFlag!=0)
+		{
+		if(state<HALL_MEASURE_COUNT-1)
 		{
 			speedBuff+=TIM2->CCR1;
 			state++;
@@ -166,13 +169,14 @@ void TIM2_IRQHandler(void)
 		else
 		{
 			speedBuff+=TIM2->CCR1;
-			elPeriod=speedBuff/hallMeasureCount;
+			elPeriod=speedBuff/HALL_MEASURE_COUNT;
 			mPeriod=elPeriod*6/POLE_PAIRS;
 			mSpeed=(float)direction*(60*72000000/mPeriod);
 			if(mSpeed>MAX_SPEED_RPM)
 			{
-				setErrorState(SPEED_ERROR);
-				sendErrorState();
+				//setErrorState(SPEED_ERROR);
+				//sendErrorState();
+				//return;
 			}
 			angleInterpolPeriod=(uint32_t)((float)elPeriod*d_ANGLE_RAD/(500*PI_3));
 			TIM3->CR1&=~TIM_CR1_CEN; 
@@ -181,10 +185,12 @@ void TIM2_IRQHandler(void)
 			TIM3->CR1|=TIM_CR1_CEN;
 			state=0;
 			speedBuff=0;
-			if(hallMeasureCount==1)
-				hallMeasureCount=HALL_MEASURE_COUNT;
+			//if(hallMeasureCount==1)
+			//	hallMeasureCount=HALL_MEASURE_COUNT;
+		}
 		}
 	}
+	startFlag=1;
 }
 
 void TIM3_IRQHandler(void)
@@ -210,6 +216,7 @@ void TIM17_IRQHandler(void)
 	{
 		TIM17->SR&=~TIM_SR_UIF;
 		mSpeed=0;
+		startFlag=0;
 		TIM3->CR1&=~TIM_CR1_CEN; 
 		hallInitAngle((GPIOA->IDR&(1<<0)),((GPIOB->IDR&(1<<3))>>3),((GPIOA->IDR&(1<<2))>>2));
 	}
@@ -237,7 +244,7 @@ void hallTimInit(void)
     TIM3->PSC=500-1;
 	RCC->APB2ENR |= RCC_APB2ENR_TIM17EN;
 	TIM17->PSC=7200-1;
-	TIM17->ARR = 500;
+	TIM17->ARR = 800;
 	TIM17->DIER |= TIM_DIER_UIE;
 	TIM17->CR1|=TIM_CR1_CEN;
 	NVIC_EnableIRQ(TIM17_IRQn);
