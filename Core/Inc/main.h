@@ -16,8 +16,8 @@
 
 #define COMMUNICATE_PERIOD 5
 
-#define FRONT_LEFT
-//#define FRONT_RIGHT
+//#define FRONT_LEFT
+#define FRONT_RIGHT
 //#define REAR_LEFT
 //#define REAR_RIGHT
 

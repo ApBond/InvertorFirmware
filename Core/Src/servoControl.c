@@ -1,21 +1,85 @@
 #include "servoControl.h"
 
+#define ZERO_POINT 803
+#define DEAD_ZONE 2
+
 int pwm_prev[4]={0};
 int pwm_count[4]={0};
 int pwm_aim[4]={0};
 int dgam[4];
 int d_pwm=0;
+static uint8_t reciveFlag=0;
 
 uint8_t i2c_transmit_buffer[8];
 uint8_t i2c_receive_buffer[2];
 uint8_t i2c_transmit_counter;
 static uint8_t reciverState=0;
+uint16_t mesuerment;
 
-uint8_t calibration(){
-	float mesuerment;
-	TIM16->DIER&=~TIM_DIER_CC1IE;//Настройка прерываний по совпадению
-	mesuerment = i2c_receive_buffer[0]<<8 + i2c_receive_buffer[1];
-	while (mesuerment<2000 || mesuerment>2080){
+uint8_t calibration()
+{
+	TIM16->CR1&=~TIM_CR1_CEN;
+	TIM16->DIER&=~TIM_DIER_CC1IE;
+	TIM16->ARR = 150;
+	TIM16->PSC = 2000-1;
+	TIM16->CR1 |= TIM_CR1_CEN;
+	int error;
+	while(1)
+	{	
+		if(reciveFlag==0) getServoAngle();
+		if(reciveFlag==2)
+		{
+			mesuerment = ((i2c_receive_buffer[0]<<8)+i2c_receive_buffer[1])>>4;
+			error=mesuerment-ZERO_POINT;
+			if(abs(error)>DEAD_ZONE)
+			{
+				//TIM16->CCR1 = 50;
+				#ifdef FRONT_LEFT 
+				if(error<0)
+				{
+					GPIOB->BSRR= GPIO_BSRR_BS_5;
+				}
+				else if(error>0)
+				{
+					GPIOB->BSRR= GPIO_BSRR_BR_5;
+				}
+				#endif
+				#ifdef REAR_LEFT | REAR_RIGHT 
+				if(error>0)
+				{
+					GPIOB->BSRR= GPIO_BSRR_BS_5;
+				}
+				else if(error<0)
+				{
+					GPIOB->BSRR= GPIO_BSRR_BR_5;
+				}
+				#endif
+				#ifdef REAR_RIGHT 
+				if(error>0)
+				{
+					GPIOB->BSRR= GPIO_BSRR_BS_5;
+				}
+				else if(error<0)
+				{
+					GPIOB->BSRR= GPIO_BSRR_BR_5;
+				}
+				#endif
+			}
+			else
+			{
+				TIM16->CCR1 = 0xffff;
+				/*TIM16->CR1&=~TIM_CR1_CEN;
+				TIM16->PSC = 50-1;
+				TIM16->DIER|=TIM_DIER_CC1IE;
+				TIM16->CR1 |= TIM_CR1_CEN;
+				return;*/
+			}
+			reciveFlag=0;
+			delay_ms(1);
+		}		
+	}
+	
+	/*while (mesuerment<2000 || mesuerment>2080){
 		getServoAngle();
 		while(!(DMA1->ISR & DMA_ISR_TCIF7));
 		TIM16->CCR1 = 50;
@@ -27,7 +91,8 @@ uint8_t calibration(){
 		}
 	}
 	TIM16->CCR1 = 0xffff;
-	TIM16->DIER|=TIM_DIER_CC1IE;//Настройка прерываний по совпадению
+	TIM16->DIER|=TIM_DIER_CC1IE;//Настройка прерываний по совпадению*/
+	
 }
 
 void getServoAngle()
@@ -160,6 +225,7 @@ void I2C_Transfer(uint8_t addr, uint8_t num_bytes, uint8_t *data){
 void I2C_Receiver(uint8_t addr, uint8_t num_bytes)
 {
 	reciverState=0;
+	reciveFlag=1;
 	I2C1->CR2=addr<<1 | I2C_CR2_RD_WRN | num_bytes<<I2C_CR2_NBYTES_Pos | I2C_CR2_START;
 }
 
@@ -171,6 +237,10 @@ void I2C1_EV_IRQHandler(void) {
 	if(I2C1->ISR & I2C_ISR_RXNE){
 		i2c_receive_buffer[reciverState]=I2C1->RXDR;
 		reciverState++;
-		if(reciverState==2) reciverState=0;
+		if(reciverState==2)
+		{
+			reciverState=0;
+			reciveFlag=2;
+		}
 	}
 }

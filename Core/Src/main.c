@@ -38,7 +38,9 @@ int main(void)
     timer6Init();
 
     tim16Init();
-    //I2CInit();
+    I2CInit();
+    delay_ms(10);
+    //calibration();
     //DMAInit();
     //motorStart();
 
@@ -49,11 +51,11 @@ int main(void)
             sendDiagnosticData();
             communicateProcessTimer=0;
         }
-        if(testTimer>=1000)
+        /*if(testTimer>=1000)
         {
             //I2C_Receiver(0x48,2);
-            testTimer=0;
-        }
+            //testTimer=0;
+        }*/
         userCommunicationProcess();
     }
 }
