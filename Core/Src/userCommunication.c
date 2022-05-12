@@ -40,9 +40,12 @@ void sendDiagnosticData(void)
 
 void sendErrorState(void)
 {
+    uint8_t data[8];
     FOC_Error_t error;
     error=getErrorState();
-    canWrite((uint8_t*)&error,1,ERROR_CHANNEL_ID);
+    data[0]=(uint8_t)error;
+    data[1] = (uint8_t)INDIVIDUAL_ID1;
+    canWrite(data,2,ERROR_CHANNEL_ID);
 }
 
 void userCommunicationProcess(void)
