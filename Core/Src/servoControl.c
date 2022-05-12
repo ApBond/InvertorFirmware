@@ -229,6 +229,7 @@ void I2C_Receiver(uint8_t addr, uint8_t num_bytes)
 	I2C1->CR2=addr<<1 | I2C_CR2_RD_WRN | num_bytes<<I2C_CR2_NBYTES_Pos | I2C_CR2_START;
 }
 
+
 void I2C1_EV_IRQHandler(void) {
 	if(I2C1->ISR & I2C_ISR_TXIS){
 		i2c_transmit_counter++;

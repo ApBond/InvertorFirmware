@@ -44,7 +44,7 @@ RCC_STATUS_t RccClockInit(void)
 	RCC->CFGR|=RCC_CFGR_PPRE1_DIV2;//APB1 prescaler=2
 	RCC->CFGR|=RCC_CFGR_SW_PLL;//Switch to PLL
 	while((RCC->CFGR&RCC_CFGR_SWS)!=(0x02<<2)){}
-	RCC->CR&=~RCC_CR_HSION;//Disable HSI
+	//RCC->CR&=~RCC_CR_HSION;//Disable HSI
 	return READY;
 }
 

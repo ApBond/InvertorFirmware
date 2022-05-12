@@ -52,6 +52,7 @@ void userCommunicationProcess(void)
     int32_t temp32;
     FOC_Error_t error;
     float refAngleTemp[4];
+    uint8_t data[8];
     reciveData=canRead();
     if(reciveData!=0)
     {
@@ -92,6 +93,13 @@ void userCommunicationProcess(void)
                 refAngleTemp[2]=refAngleTemp[0];
                 refAngleTemp[3]=refAngleTemp[0];
                 setServoAngle(refAngleTemp);
+                break;
+            case CHANGE_TO_BOOT_MODE:
+                motorStop();
+                flashUnlock();
+				flashWriteData(BOOT_KEY_ADR,BOOT_KEY);
+				flashLock();
+                NVIC_SystemReset();
                 break;
             default:
                 break;

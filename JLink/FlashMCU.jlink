@@ -1,7 +1,7 @@
 r
 h
-loadbin build\InvertorFirmware.hex 0x00
+loadbin build\InvertorFirmware.hex 0x0
 g
-verifybin build\InvertorFirmware.hex, 0x00
+verifybin build\InvertorFirmware.hex, 0x0
 r
 q
