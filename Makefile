@@ -42,6 +42,7 @@ Core/Src/rcc.c \
 core/Src/control.c \
 core/Src/hallFeedback.c \
 core/Src/PWMControl.c \
+core/Src/flash.c \
 core/Src/currentSensing.c \
 core/Src/userCommunication.c \
 core/Src/kinematic.c \
@@ -97,6 +98,7 @@ C_DEFS =  \
 -DUSE_HAL_DRIVER \
 -DSTM32F303x8
 
+C_DEFS+= $(WHEEL)
 
 # AS includes
 AS_INCLUDES = 
@@ -106,7 +108,6 @@ C_INCLUDES =  \
 -ICore/Inc \
 -IDrivers/CMSIS/Device/ST/STM32F3xx/Include \
 -IDrivers/CMSIS/Include
-
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
@@ -168,6 +169,7 @@ $(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	
 $(BUILD_DIR):
 	mkdir $@		
+
 
 #######################################
 # clean up

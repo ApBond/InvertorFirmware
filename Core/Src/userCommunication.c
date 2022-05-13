@@ -40,9 +40,12 @@ void sendDiagnosticData(void)
 
 void sendErrorState(void)
 {
+    uint8_t data[8];
     FOC_Error_t error;
     error=getErrorState();
-    canWrite((uint8_t*)&error,1,ERROR_CHANNEL_ID);
+    data[0]=(uint8_t)error;
+    data[1] = (uint8_t)INDIVIDUAL_ID1;
+    canWrite(data,2,ERROR_CHANNEL_ID);
 }
 
 void userCommunicationProcess(void)
@@ -52,6 +55,7 @@ void userCommunicationProcess(void)
     int32_t temp32;
     FOC_Error_t error;
     float refAngleTemp[4];
+    uint8_t data[8];
     reciveData=canRead();
     if(reciveData!=0)
     {
@@ -92,6 +96,13 @@ void userCommunicationProcess(void)
                 refAngleTemp[2]=refAngleTemp[0];
                 refAngleTemp[3]=refAngleTemp[0];
                 setServoAngle(refAngleTemp);
+                break;
+            case CHANGE_TO_BOOT_MODE:
+                motorStop();
+                flashUnlock();
+				flashWriteData(BOOT_KEY_ADR,BOOT_KEY);
+				flashLock();
+                NVIC_SystemReset();
                 break;
             default:
                 break;

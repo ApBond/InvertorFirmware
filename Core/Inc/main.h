@@ -10,6 +10,7 @@
 #include "PWMControl.h"
 #include "userCommunication.h"
 #include "kinematic.h"
+#include "flash.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -18,7 +19,11 @@
 
 //#define FRONT_LEFT
 //#define FRONT_RIGHT
+<<<<<<< HEAD
 #define REAR_LEFT
+=======
+//#define REAR_LEFT
+>>>>>>> f59e2eb510f2e6fa46a4598bfc8499a38f6cc294
 //#define REAR_RIGHT
 
 #ifdef FRONT_LEFT
