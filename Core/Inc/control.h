@@ -5,7 +5,8 @@
 #include "math.h"
 
 #define SPEED_LOOP_TIM_ARR 5
-
+#define SPEED_LOOP_PERIOD 0.0005
+#define RAMP_RPM_SEC 80
 
 #define MAX_SPEED_RPM 500
 #define MIN_SPEED_RPM 5

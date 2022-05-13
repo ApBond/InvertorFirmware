@@ -4,13 +4,14 @@ static struct d_q_t Us;
 static FOC_Error_t errorState = NOT_ERROR;
 static FOC_Mode_t controleMode = SPEED_CONTROL;
 static float referenceSpeed=0;
+static float currentReferenceSpeed=0;
 static float referenceTorque=0;
 static Motor_state_t motorState = MS_STOP;
 
 PIDHandle_t idLoopPID=
 {
-    .kp=0.004,
-    .ki=0.000003,
+    .kp=0.035,
+    .ki=0.00001,
     .kd=0,
     .prevError=0,
     .integralTerm=0
@@ -18,8 +19,8 @@ PIDHandle_t idLoopPID=
 
 PIDHandle_t iqLoopPID=
 { 
-    .kp=0.004,
-    .ki=0.000003,
+    .kp=0.035,
+    .ki=0.00001,
     . kd=0,
     .prevError=0,
     .integralTerm=0
@@ -27,8 +28,8 @@ PIDHandle_t iqLoopPID=
 
 PIDHandle_t speedLoopPID=
 {
-    .kp=0.15,
-    .ki=0.00003,
+    .kp=0.035,
+    .ki=0.00001,
     .kd=0,
     .prevError=0,
     .integralTerm=0
@@ -62,9 +63,25 @@ void currentLoop(float Id,float Iq,float rotorElAngle)
 void speedLoop(void)
 {
     float torque;
-    referenceTorque=PIDController(&speedLoopPID,referenceSpeed-getSpeed());
+    if(referenceSpeed==0 || (currentReferenceSpeed<0 && referenceSpeed>0) || (currentReferenceSpeed>0 && referenceSpeed<0))
+    {
+        currentReferenceSpeed=0;
+    }
+    else if(currentReferenceSpeed<referenceSpeed)
+    {
+        currentReferenceSpeed+=SPEED_LOOP_PERIOD*RAMP_RPM_SEC;
+    }
+    else if(currentReferenceSpeed>referenceSpeed)
+    {
+        currentReferenceSpeed-=SPEED_LOOP_PERIOD*RAMP_RPM_SEC;
+    }
+    else
+    {
+        currentReferenceSpeed=referenceSpeed;
+    }
+    torque=PIDController(&speedLoopPID,currentReferenceSpeed-getSpeed());
     //referenceTorque=2;
-    //setReferenceTorque(torque);   
+    setReferenceTorque(torque);   
 }
 
 void regulatorClear(void)
@@ -99,7 +116,6 @@ void stopSpeedLoop(void)
 
 void setReferenceSpeed(float speed)
 {
-
     #ifndef FRONT_RIGHT
         speed*=-1;
     #endif

@@ -213,7 +213,7 @@
 		{
 			"label": "Can flash Front left wheel 101",
 			"type": "shell",
-			"command": "PCBoot.exe 24 101 C:/work/project/InvertorFirmware/build/InvertorFirmware.bin",
+			"command": "PCBoot.exe 9 101 C:/work/project/InvertorFirmware/build/InvertorFirmware.bin",
 			"options": {
 				"cwd": "${workspaceRoot}",
 				"shell": {
@@ -232,7 +232,7 @@
 		{
 			"label": "Can flash Front right wheel 102",
 			"type": "shell",
-			"command": "PCBoot.exe 24 102 C:/work/project/InvertorFirmware/build/InvertorFirmware.bin",
+			"command": "PCBoot.exe 9 102 C:/work/project/InvertorFirmware/build/InvertorFirmware.bin",
 			"options": {
 				"cwd": "${workspaceRoot}",
 				"shell": {
@@ -251,7 +251,7 @@
 		{
 			"label": "Can flash Rear left wheel 103",
 			"type": "shell",
-			"command": "PCBoot.exe 24 103 C:/work/project/InvertorFirmware/build/InvertorFirmware.bin",
+			"command": "PCBoot.exe 9 103 C:/work/project/InvertorFirmware/build/InvertorFirmware.bin",
 			"options": {
 				"cwd": "${workspaceRoot}",
 				"shell": {
@@ -270,7 +270,7 @@
 		{
 			"label": "Can flash Rear right wheel 104",
 			"type": "shell",
-			"command": "PCBoot.exe 24 104 C:/work/project/InvertorFirmware/build/InvertorFirmware.bin",
+			"command": "PCBoot.exe 9 104 C:/work/project/InvertorFirmware/build/InvertorFirmware.bin",
 			"options": {
 				"cwd": "${workspaceRoot}",
 				"shell": {
