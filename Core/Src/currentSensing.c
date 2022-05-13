@@ -57,11 +57,9 @@ void ADC1_2_IRQHandler(void)
             sinElAngle=getSinElAngle();
             Idq.d=I_alpha_betta.alpha*sinElAngle+I_alpha_betta.betta*cosElAngle;
             Idq.q=I_alpha_betta.alpha*cosElAngle-I_alpha_betta.betta*sinElAngle;
-            //Idq.d=Ia;
-            //Idq.q=-Ia-Ic;
             if(fabs(Iabc.a)>=CURRENT_LIM || fabs(Iabc.b)>=CURRENT_LIM || fabs(Iabc.c)>=CURRENT_LIM)
             {
-                if(errorCounter==10)
+                if(errorCounter==25)
                 {
                     setErrorState(OVERCURRENT_ERROR);
                     errorCounter=0;

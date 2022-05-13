@@ -29,9 +29,9 @@ typedef struct
 #define pi 3.14159265
 #define deg 57.29577951
 #define CONSTRAIN 5
-#define L 0.945
-#define C 0.63
-#define r_wheel 0.2
+#define L 0.53
+#define C 0.43
+#define r_wheel 0.254
 
 #define FL 0
 #define FR 1
