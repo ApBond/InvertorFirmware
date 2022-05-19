@@ -18,7 +18,16 @@ void kinematica(rcCommand_t cmd, float* Speed, float* targetAngle){
 	float Rm,gm;
 	float gam,V0,R0;
 	gam=atan2(cmd.Vy,cmd.Vx);
+	if (gam > pi/2)
+	{
+		gam = gam - pi;
+	}
+	if (gam < -pi/2)
+	{
+		gam = gam + pi;
+	}
     V0=sqrt(powf(cmd.Vx,2)+powf(cmd.Vy,2));
+	if (cmd.wz == 0) cmd.wz = 0.00001;
 	R0=V0/cmd.wz;
 	x=R0*cos(pi/2+gam);
 	y=R0*sin(pi/2+gam);
