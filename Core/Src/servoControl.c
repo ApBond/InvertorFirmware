@@ -95,9 +95,11 @@ uint8_t calibration()
 	
 }
 
-void getServoAngle()
+float getServoAngle(void)
 {
-	I2C_Receiver(0x48, 2);
+	//I2C_Receiver(0x48, 2);
+	return (float)pwm_count[WHEEL]*360.0f/deg/RESOLUTION/REDUCTOR;
+
 }
 
 void setServoAngle(float* targetAngle){

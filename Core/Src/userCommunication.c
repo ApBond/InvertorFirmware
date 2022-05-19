@@ -113,9 +113,9 @@ void userCommunicationProcess(void)
             rcCommand_t cmd;
             float refSpeed;
             float refAngle[4];
-            cmd.V = (float)((int16_t)(reciveData->data[0] + (reciveData->data[1]<<8)))/2048;
-            cmd.gam = (float)((int16_t)(reciveData->data[2] + (reciveData->data[3]<<8)))/2048;
-            cmd.R = (float)(int32_t)((reciveData->data[4] + (reciveData->data[5]<<8) + (reciveData->data[6]<<16) + (reciveData->data[7]<<24)))/65535;
+            cmd.Vx = (float)((int16_t)(reciveData->data[0] + (reciveData->data[1]<<8)))/2048;
+            cmd.Vy = (float)((int16_t)(reciveData->data[2] + (reciveData->data[3]<<8)))/2048;
+            cmd.wz = (float)((int16_t)(reciveData->data[4] + (reciveData->data[5]<<8)))/2048;
             kinematica(cmd,&refSpeed,refAngle);
             setServoAngle(refAngle);
             setReferenceSpeed(refSpeed);
