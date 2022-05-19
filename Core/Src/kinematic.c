@@ -1,6 +1,6 @@
 #include "kinematic.h"
 
-double sign(double a){
+float sign(float a){
 	if (a>0) return 1;
 	else if (a<0) return -1;
 	else return 0;
@@ -17,7 +17,21 @@ void kinematica(rcCommand_t cmd, float* Speed, float* targetAngle){
 	float R[4];  
 	float Rm,gm;
 	float gam,V0,R0;
-	gam=atan2(cmd.Vy,cmd.Vx);
+	if (cmd.Vx == 0 & cmd.Vy != 0)
+	{
+		gam = pi/2*sign(cmd.Vy);
+	}
+	else 
+	{
+		if (cmd.Vx != 0 & cmd.Vy == 0)
+		{
+			gam = 0;
+		}
+		else
+		{
+			gam=atan2(cmd.Vy,cmd.Vx);
+		}
+	}
 	if (gam > pi/2)
 	{
 		gam = gam - pi;
