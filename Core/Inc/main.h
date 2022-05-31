@@ -15,7 +15,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define COMMUNICATE_PERIOD 5
+#define COMMUNICATE_PERIOD 100
 
 //#define FRONT_LEFT
 //#define FRONT_RIGHT

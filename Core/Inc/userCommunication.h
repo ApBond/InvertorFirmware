@@ -2,6 +2,7 @@
 #define __USER_COMMUNICATION
 
 #include "main.h"
+#include "servoControl.h"
 
 #define BROADCAST_ID 1
 #define SET_VECTOR_ID 2

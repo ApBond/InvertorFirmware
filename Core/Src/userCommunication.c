@@ -43,12 +43,12 @@ void sendDiagnosticData(void)
         canWrite(data,2,INDIVIDUAL_ID2);
     } else if(communicationMode==ODOM)
     {
-        odomAngle = getAngle();
         odomSpeed = getSpeed();
-        temp16 = (uint16_t)((float)odomSpeed * 2048);
+        odomAngle = odomServoGetAngle();
+        temp16 = (int16_t)((float)odomSpeed * 128);
         data[0]=temp16 & 0xFF;
         data[1]=temp16 >> 8;
-        temp16 = (uint16_t)((float)odomAngle * 2048);
+        temp16 = (int16_t)(odomAngle * 256);
         data[2]=temp16 & 0xFF;
         data[3]=temp16 >> 8;
         canWrite(data,4,INDIVIDUAL_ID2);
@@ -139,7 +139,14 @@ void userCommunicationProcess(void)
             float refAngle[4];
             cmd.V = (float)((int16_t)(reciveData->data[0] + (reciveData->data[1]<<8)))/2048;
             cmd.gam = (float)((int16_t)(reciveData->data[2] + (reciveData->data[3]<<8)))/2048;
-            cmd.R = (float)(int32_t)((reciveData->data[4] + (reciveData->data[5]<<8) + (reciveData->data[6]<<16) + (reciveData->data[7]<<24)))/65535;
+            if(reciveData->messageId==ROS_CONTROL_ID && motionMode==ROS_CONTROL)
+            {
+               cmd.R = (float)((int16_t)(reciveData->data[4] + (reciveData->data[5]<<8)))/10; 
+            }
+            else
+            {
+                cmd.R = (float)(int32_t)((reciveData->data[4] + (reciveData->data[5]<<8) + (reciveData->data[6]<<16) + (reciveData->data[7]<<24)))/65535;
+            }
             kinematica(cmd,&refSpeed,refAngle);
             setServoAngle(refAngle);
             setReferenceSpeed(refSpeed);    

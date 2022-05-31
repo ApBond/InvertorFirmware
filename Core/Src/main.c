@@ -26,11 +26,13 @@ void timer6Init(void)
 int main(void)
 {
     uint8_t i;
-    uint16_t filter[]={BROADCAST_ID,SET_VECTOR_ID,INDIVIDUAL_ID1,ERROR_CHANNEL_ID};
+    uint16_t filter1[]={BROADCAST_ID,INDIVIDUAL_ID1,ERROR_CHANNEL_ID,5};
+    uint16_t filter2[]={ROS_CONTROL_ID,SET_VECTOR_ID,INDIVIDUAL_ID2,6};
     while(RccClockInit()!=READY);
     delayInit();
     canInit(0x011c0008);
-    canConfigReciveFIFO(1,0,ID,&filter);
+    canConfigReciveFIFO(1,0,ID,&filter1);
+    canConfigReciveFIFO(1,1,ID,&filter2);
     hallTimInit();
     ADCInit();
     PWMInit();

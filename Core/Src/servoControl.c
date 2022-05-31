@@ -100,9 +100,12 @@ void getServoAngle()
 	I2C_Receiver(0x48, 2);
 }
 
-float servoGetAngle()
+float odomServoGetAngle(void)
 {
-	return (float)pwm_count[WHEEL]*360.0f/deg/RESOLUTION/REDUCTOR;
+	float temp;
+	temp=(float)(pwm_count[WHEEL]/(deg*RESOLUTION*REDUCTOR));
+	temp*=360;
+	return (float)temp;
 }
 
 void setServoAngle(float* targetAngle){
