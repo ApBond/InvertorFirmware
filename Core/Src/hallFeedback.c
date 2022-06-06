@@ -10,6 +10,8 @@ static uint8_t hallMeasureCount=HALL_MEASURE_COUNT;
 static uint8_t startFlag=1;
 static uint8_t prevHallState=0;
 
+static uint8_t angleExtrapolatorEnable = 1;
+static float angleExtrapolatorSpeedMargin = 30;
 
 static float hallGetAngle(uint8_t ha,uint8_t hb,uint8_t hc)
 {
@@ -177,11 +179,18 @@ void TIM2_IRQHandler(void)
 				//sendErrorState();
 				//return;
 			}
-			angleInterpolPeriod=(uint32_t)((float)elPeriod*d_ANGLE_RAD/(500*PI_3));
-			// TIM3->CR1&=~TIM_CR1_CEN; 
-			// TIM3->CNT=0;
-			// TIM3->ARR=angleInterpolPeriod;
-			// TIM3->CR1|=TIM_CR1_CEN;
+			if(angleExtrapolatorEnable==1 && (direction*mSpeed) > angleExtrapolatorSpeedMargin)
+			{
+				angleInterpolPeriod=(uint32_t)((float)elPeriod*d_ANGLE_RAD/(500*PI_3));
+				TIM3->CR1&=~TIM_CR1_CEN; 
+				TIM3->CNT=0;
+				TIM3->ARR=angleInterpolPeriod;
+				TIM3->CR1|=TIM_CR1_CEN;
+			}
+			else
+			{
+				TIM3->CR1&=~TIM_CR1_CEN;
+			}
 			state=0;
 			speedBuff=0;
 			//if(hallMeasureCount==1)
