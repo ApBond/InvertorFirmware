@@ -113,7 +113,11 @@ void setServoAngle(float* targetAngle){
 	uint8_t i;
 	int current_time;
 	if (pwm_count[WHEEL] != pwm_aim[WHEEL]){
-		for (i = 0; i < 4; i++) pwm_count[i]=pwm_prev[i] + (int)((pwm_aim[i]-pwm_prev[i])*fabs((pwm_count[WHEEL]-pwm_prev[WHEEL]))/dgam[WHEEL]);
+		for (i = 0; i < 4; i++) 
+		{
+			if (i!=WHEEL)
+				pwm_count[i]=pwm_prev[i] + (int)((float)(pwm_aim[i]-pwm_prev[i])*fabs((pwm_count[WHEEL]-pwm_prev[WHEEL]))/(float)dgam[WHEEL]);
+		}
 	}
 	else		
 		for (i = 0; i < 4; i++) pwm_count[i]=pwm_aim[i];
@@ -133,7 +137,7 @@ void setServoAngle(float* targetAngle){
 	if (gm<dgam[FR]) gm=dgam[FR];
 	if (gm<dgam[RL]) gm=dgam[RL];
 	if (gm<dgam[RR]) gm=dgam[RR];
-	TIM16->ARR=1500*gm/dgam[WHEEL];
+	TIM16->ARR=500*gm/dgam[WHEEL];
 	//TIM16->PSC=150*gm/dgam[WHEEL]*400;
 	//TIM16->ARR=dgam[WHEEL];
 
