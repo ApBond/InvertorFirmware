@@ -5,9 +5,9 @@
 
 typedef struct 
 {
-    float Vx;
-    float Vy;
-    float wz;
+    float V;
+    float R;
+    float gam;
 } rcCommand_t;
 
 typedef struct 

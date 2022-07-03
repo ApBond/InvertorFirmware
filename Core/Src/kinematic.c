@@ -1,6 +1,6 @@
 #include "kinematic.h"
 
-float sign(float a){
+double sign(double a){
 	if (a>0) return 1;
 	else if (a<0) return -1;
 	else return 0;
@@ -16,59 +16,34 @@ void kinematica(rcCommand_t cmd, float* Speed, float* targetAngle){
 	float x,y;
 	float R[4];  
 	float Rm,gm;
-	float gam,V0,R0;
-	if (cmd.Vx == 0 & cmd.Vy != 0)
-	{
-		gam = pi/2*sign(cmd.Vy);
-	}
-	else 
-	{
-		if (cmd.Vx != 0 & cmd.Vy == 0)
-		{
-			gam = 0;
-		}
-		else
-		{
-			gam=atan2(cmd.Vy,cmd.Vx);
-		}
-	}
-	if (gam > pi/2)
-	{
-		gam = gam - pi;
-	}
-	if (gam < -pi/2)
-	{
-		gam = gam + pi;
-	}
-    V0=sqrt(powf(cmd.Vx,2)+powf(cmd.Vy,2));
-	if (cmd.wz == 0) cmd.wz = 0.00001;
-	R0=V0/cmd.wz;
-	x=R0*cos(pi/2+gam);
-	y=R0*sin(pi/2+gam);
-
-	if (cmd.wz>0){
-		targetAngle[FL]=atan2(-x+L/2, y-C/2);
-		targetAngle[FR]=atan2(-x+L/2, y+C/2);
-		targetAngle[RL]=atan2(-x-L/2, y-C/2);
-		targetAngle[RR]=atan2(-x-L/2, y+C/2);
-	}
-	else if (cmd.wz<0){
-		targetAngle[FL]=-atan2(-x+L/2, -y+C/2);
-		targetAngle[FR]=-atan2(-x+L/2, -y-C/2);
-		targetAngle[RL]=-atan2(-x-L/2, -y+C/2);
-		targetAngle[RR]=-atan2(-x-L/2, -y-C/2);
+	x=cmd.R*cos(pi/2+cmd.gam);
+	y=cmd.R*sin(pi/2+cmd.gam);
+	if (cmd.R>0){
+		targetAngle[FL]=atan2(L/2-x, y-C/2);
+		targetAngle[FR]=atan2(L/2-x, y+C/2);
+		targetAngle[RL]=atan2(-L/2-x, y-C/2);
+		targetAngle[RR]=atan2(-L/2-x, y+C/2);
 	}
 	else{
-		targetAngle[FL]=gam;
-		targetAngle[FR]=gam;
-		targetAngle[RL]=gam;
-		targetAngle[RR]=gam;
+		targetAngle[RR]=atan2(L/2+x, -y-C/2);
+		targetAngle[RL]=atan2(L/2+x, -y+C/2);
+		targetAngle[FR]=atan2(-L/2+x, -y-C/2);
+		targetAngle[FL]=atan2(-L/2+x, -y+C/2);
 	}
 
-	R[FL]=sqrt(powf(L/2-x,2)+powf(C/2-y,2));
-	R[FR]=sqrt(powf(L/2-x,2)+powf(-C/2-y,2));
-	R[RL]=sqrt(powf(-L/2-x,2)+powf(C/2-y,2));
-	R[RR]=sqrt(powf(-L/2-x,2)+powf(-C/2-y,2));
+	R[FL]=fabs(y-C/2)/fabs(cos(targetAngle[FL]));
+	R[FR]=fabs(y+C/2)/fabs(cos(targetAngle[FR]));
+	R[RL]=fabs(y-C/2)/fabs(cos(targetAngle[RL]));
+	R[RR]=fabs(y+C/2)/fabs(cos(targetAngle[RR]));
+
+	if(R[FL]>1000) R[FL]=100000;
+	if(R[FR]>1000) R[FR]=100000;
+	if(R[RL]>1000) R[RL]=100000;
+	if(R[RR]>1000) R[RR]=100000;
+	Rm=R[FL];
+	if (Rm<R[FR]) Rm=R[FR];
+	if (Rm<R[RL]) Rm=R[RL];
+	if (Rm<R[RR]) Rm=R[RR];
 
 	if (fabs(targetAngle[FL])<0.01) targetAngle[FL]=0;
 	if (fabs(targetAngle[FR])<0.01) targetAngle[FR]=0;
@@ -78,14 +53,5 @@ void kinematica(rcCommand_t cmd, float* Speed, float* targetAngle){
 	targetAngle[FR] = -targetAngle[FR];
 	targetAngle[RL] = -targetAngle[RL];
 
-    if (cmd.wz==0){
-		(*Speed)=V0*60/r_wheel/2/pi;
-	}
-    else if (V0==0){
-        (*Speed)=(cmd.wz*60/r_wheel/2/pi)*R[WHEEL];
-	}
-    else{
-        (*Speed)=(((V0*60/r_wheel/2/pi)))*R[WHEEL]/R0;
-	}
-
+	(*Speed)=(((cmd.V*60/r_wheel/2/pi)))*R[WHEEL]/Rm;
 }

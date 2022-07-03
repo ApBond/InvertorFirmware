@@ -10,6 +10,8 @@ static uint8_t hallMeasureCount=HALL_MEASURE_COUNT;
 static uint8_t startFlag=1;
 static uint8_t prevHallState=0;
 
+static uint8_t angleExtrapolatorEnable = 1;
+static float angleExtrapolatorSpeedMargin = 30;
 
 static float hallGetAngle(uint8_t ha,uint8_t hb,uint8_t hc)
 {
@@ -28,11 +30,11 @@ static float hallGetAngle(uint8_t ha,uint8_t hb,uint8_t hc)
 			if(prevHallState==4)
 			{
 				direction=1;
-				angle=OFFSET_ANGLE_RAD;
+				elAngle=OFFSET_ANGLE_RAD;
 			}
 			else if(prevHallState==1)
 			{
-				angle=OFFSET_ANGLE_RAD+DEG_60;
+				elAngle=OFFSET_ANGLE_RAD+DEG_60;
 				direction=-1;
 			}
 			break;
@@ -40,60 +42,60 @@ static float hallGetAngle(uint8_t ha,uint8_t hb,uint8_t hc)
 			if(prevHallState==5)
 			{
 				direction=1;
-				angle=OFFSET_ANGLE_RAD+DEG_60;
+				elAngle=OFFSET_ANGLE_RAD+DEG_60;
 			}
 			else if(prevHallState==3)
 			{
 				direction=-1;
-				angle=OFFSET_ANGLE_RAD+2*DEG_60;
+				elAngle=OFFSET_ANGLE_RAD+2*DEG_60;
 			}
 			break;
 		case 3:
 			if(prevHallState==1)
 			{
 				direction=1;
-				angle=OFFSET_ANGLE_RAD+2*DEG_60;
+				elAngle=OFFSET_ANGLE_RAD+2*DEG_60;
 			}
 			else if(prevHallState==2)
 			{
 				direction=-1;
-				angle=OFFSET_ANGLE_RAD+3*DEG_60;
+				elAngle=OFFSET_ANGLE_RAD+3*DEG_60;
 			}
 			break;
 		case 2:
 			if(prevHallState==3)
 			{
 				direction=1;
-				angle=OFFSET_ANGLE_RAD+3*DEG_60;
+				elAngle=OFFSET_ANGLE_RAD+3*DEG_60;
 			}
 			else if(prevHallState==6)
 			{
 				direction=-1;
-				angle=OFFSET_ANGLE_RAD+4*DEG_60;
+				elAngle=OFFSET_ANGLE_RAD+4*DEG_60;
 			}
 			break;
 		case 6:
 			if(prevHallState==2)
 			{
 				direction=1;
-				angle=OFFSET_ANGLE_RAD+4*DEG_60;
+				elAngle=OFFSET_ANGLE_RAD+4*DEG_60;
 			}
 			else if(prevHallState==4)
 			{
 				direction=-1;
-				angle=OFFSET_ANGLE_RAD+5*DEG_60;
+				elAngle=OFFSET_ANGLE_RAD+5*DEG_60;
 			}
 			break;
 		case 4:
 			if(prevHallState==6)
 			{
 				direction=1;
-				angle=OFFSET_ANGLE_RAD+5*DEG_60;
+				elAngle=OFFSET_ANGLE_RAD+5*DEG_60;
 			}
 			else if(prevHallState==5)
 			{
 				direction=-1;
-				angle=OFFSET_ANGLE_RAD;
+				elAngle=OFFSET_ANGLE_RAD;
 			}
 			break;
 		default:
@@ -103,8 +105,7 @@ static float hallGetAngle(uint8_t ha,uint8_t hb,uint8_t hc)
 				setErrorState(HALL_ERROR);
 				errorCount=0;
 				sendErrorState();
-			}
-			prevHallState=0;
+			}	
 			return 1;
 	}
 	prevHallState=hallState;
@@ -154,7 +155,7 @@ void TIM2_IRQHandler(void)
 	{
         TIM2->SR&=~TIM_SR_CC1IF;
 		TIM17->CNT=0;
-		elAngle=hallGetAngle((GPIOA->IDR&(1<<0)),((GPIOB->IDR&(1<<3))>>3),((GPIOA->IDR&(1<<2))>>2));
+		hallGetAngle((GPIOA->IDR&(1<<0)),((GPIOB->IDR&(1<<3))>>3),((GPIOA->IDR&(1<<2))>>2));
 		sinElAngle=sinf(elAngle);
 		cosElAngle=cosf(elAngle);
 		//currentLoop(Idq.d,Idq.q);
@@ -178,11 +179,18 @@ void TIM2_IRQHandler(void)
 				//sendErrorState();
 				//return;
 			}
-			angleInterpolPeriod=(uint32_t)((float)elPeriod*d_ANGLE_RAD/(500*PI_3));
-			TIM3->CR1&=~TIM_CR1_CEN; 
-			TIM3->CNT=0;
-			TIM3->ARR=angleInterpolPeriod;
-			TIM3->CR1|=TIM_CR1_CEN;
+			if(angleExtrapolatorEnable==1 && (direction*mSpeed) > angleExtrapolatorSpeedMargin)
+			{
+				angleInterpolPeriod=(uint32_t)((float)elPeriod*d_ANGLE_RAD/(500*PI_3));
+				TIM3->CR1&=~TIM_CR1_CEN; 
+				TIM3->CNT=0;
+				TIM3->ARR=angleInterpolPeriod;
+				TIM3->CR1|=TIM_CR1_CEN;
+			}
+			else
+			{
+				TIM3->CR1&=~TIM_CR1_CEN;
+			}
 			state=0;
 			speedBuff=0;
 			//if(hallMeasureCount==1)

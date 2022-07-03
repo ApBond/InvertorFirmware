@@ -4,7 +4,7 @@
 #include "main.h"
 
 #define HALL_FILTER 0XF
-#define HALL_MEASURE_COUNT 3
+#define HALL_MEASURE_COUNT 5
 #define POLE_PAIRS 12
 
 #define d_ANGLE 1

@@ -1,5 +1,8 @@
 #include "userCommunication.h"
 
+Communication_mode_t communicationMode = NO_DATA;
+Motion_control_mode_t motionMode = PDU_CONTROL;
+
 void sendDiagnosticData(void)
 {
     uint8_t data[8];
@@ -11,30 +14,49 @@ void sendDiagnosticData(void)
     struct d_q_t Us;
     struct d_q_t Idq;
     abc_t Iabc;
-    Iabc=getCurrentIabc();
-
-    Us=getControllImpact();
-    Idq=getCurrentIdq();
-    speed=(int16_t)(getSpeed());
-    Id=(int16_t)(getReferenceTorque()*1000);
-    Iq=(int16_t)(Idq.q*1000);
-    //Id=(int16_t)(Iabc.a*1000);
-    //Iq=(int16_t)(Iabc.c*1000);
-    Ud=(int16_t)(Us.d*1000);
-    Uq=(int16_t)(Us.q*1000);
-    data[0]=speed & 0xFF;
-    data[1]=speed >> 8;
-    data[2]=Uq & 0xFF;
-    data[3]=Uq >> 8;
-    data[4]=Id & 0xFF;
-    data[5]=Id>>8;
-    data[6]=Iq & 0xFF;
-    data[7]=Iq >> 8;
-    canWrite(data,8,INDIVIDUAL_ID1);
-    data[0]=getErrorState();
-    data[1]=getMotorState();
-    canWrite(data,2,INDIVIDUAL_ID2);
-
+    float odomSpeed;
+    float odomAngle;
+    uint16_t temp16;
+    if(communicationMode==DEBUG)
+    {
+        // Iabc=getCurrentIabc();
+        // Us=getControllImpact();
+        Idq=getCurrentIdq();
+        speed=(int16_t)(getSpeed());
+        // Id=(int16_t)(getReferenceTorque()*1000);
+        Iq=(int16_t)(Idq.d*1000);
+        //Id=(int16_t)(Iabc.a*1000);
+        //Iq=(int16_t)(Iabc.c*1000);
+        // Ud=(int16_t)(Us.d*1000);
+        // Uq=(int16_t)(Us.q*1000);
+        data[0]=Iq & 0xFF;
+        data[1]=Iq >> 8;
+        data[2]=speed & 0xFF;
+        data[3]=speed >> 8;
+        // data[0]=speed & 0xFF;
+        // data[1]=speed >> 8;
+        // data[2]=Uq & 0xFF;
+        // data[3]=Uq >> 8;
+        // data[4]=Id & 0xFF;
+        // data[5]=Id>>8;
+        // data[6]=Iq & 0xFF;
+        // data[7]=Iq >> 8;
+        canWrite(data,4,INDIVIDUAL_ID1);
+        // data[0]=getErrorState();
+        // data[1]=getMotorState();
+        // canWrite(data,2,INDIVIDUAL_ID2);
+    } else if(communicationMode==ODOM)
+    {
+        odomSpeed = getSpeed();
+        odomAngle = odomServoGetAngle();
+        temp16 = (int16_t)((float)odomSpeed * 128);
+        data[0]=temp16 & 0xFF;
+        data[1]=temp16 >> 8;
+        temp16 = (int16_t)(odomAngle * 256);
+        data[2]=temp16 & 0xFF;
+        data[3]=temp16 >> 8;
+        canWrite(data,4,INDIVIDUAL_ID2);
+    }
 
 }
 
@@ -76,9 +98,9 @@ void userCommunicationProcess(void)
                     motorStop();
                 break;
             case CHANGE_MODE:
-                if(reciveData->data[1]=TORQUE_MODE)
+                if(reciveData->data[1]==TORQUE_MODE)
                     setControlMode(TORQUE_CONTROL);
-                else if(reciveData->data[1]=SPEED_MODE)
+                else if(reciveData->data[1]==SPEED_MODE)
                     setControlMode(SPEED_CONTROL);
                 break;
             case CHANGE_SPEED:
@@ -97,6 +119,12 @@ void userCommunicationProcess(void)
                 refAngleTemp[3]=refAngleTemp[0];
                 setServoAngle(refAngleTemp);
                 break;
+            case CHANGE_DEVICE_COMMUNICATION_MODE:
+                communicationMode=reciveData->data[1];
+                break;
+            case CHANGE_MOTION_CONTROL_MODE:
+                motionMode = reciveData->data[1];
+                break;
             case CHANGE_TO_BOOT_MODE:
                 motorStop();
                 flashUnlock();
@@ -108,18 +136,24 @@ void userCommunicationProcess(void)
                 break;
             }
         }
-        else if(reciveData->messageId == SET_VECTOR_ID)
+        else if((reciveData->messageId == SET_VECTOR_ID && motionMode==PDU_CONTROL) || (reciveData->messageId==ROS_CONTROL_ID && motionMode==ROS_CONTROL))
         {
             rcCommand_t cmd;
             float refSpeed;
             float refAngle[4];
-            cmd.Vx = (float)((int16_t)(reciveData->data[0] + (reciveData->data[1]<<8)))/2048;
-            cmd.Vy = (float)((int16_t)(reciveData->data[2] + (reciveData->data[3]<<8)))/2048;
-            cmd.wz = (float)((int16_t)(reciveData->data[4] + (reciveData->data[5]<<8)))/2048;
+            cmd.V = (float)((int16_t)(reciveData->data[0] + (reciveData->data[1]<<8)))/2048;
+            cmd.gam = (float)((int16_t)(reciveData->data[2] + (reciveData->data[3]<<8)))/2048;
+            if(reciveData->messageId==ROS_CONTROL_ID && motionMode==ROS_CONTROL)
+            {
+               cmd.R = (float)((int16_t)(reciveData->data[4] + (reciveData->data[5]<<8)))/10; 
+            }
+            else
+            {
+                cmd.R = (float)(int32_t)((reciveData->data[4] + (reciveData->data[5]<<8) + (reciveData->data[6]<<16) + (reciveData->data[7]<<24)))/65535;
+            }
             kinematica(cmd,&refSpeed,refAngle);
             setServoAngle(refAngle);
-            setReferenceSpeed(refSpeed);
-            
+            setReferenceSpeed(refSpeed);    
         }
         else if(reciveData->messageId == ERROR_CHANNEL_ID)
         {

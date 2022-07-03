@@ -98,7 +98,7 @@ C_DEFS =  \
 -DUSE_HAL_DRIVER \
 -DSTM32F303x8
 
-C_DEFS+= $(WHEEL)
+#C_DEFS+= $(WHEEL)
 
 # AS includes
 AS_INCLUDES = 

@@ -4,83 +4,7 @@
 		{
 			"label": "Make Build",
 			"type": "shell",
-			"command": "make -s -j 10 all",
-			"options": {
-				"cwd": "${workspaceRoot}",
-				"shell": {
-					"executable": "cmd.exe",
-					"args": [
-						"/C"
-					]
-				}
-			},
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
-			"problemMatcher": []
-		},
-		{
-			"label": "Build Front Left 101",
-			"type": "shell",
-			"command": "make -s -j 10 WHEEL=-DFRONT_LEFT all",
-			"options": {
-				"cwd": "${workspaceRoot}",
-				"shell": {
-					"executable": "cmd.exe",
-					"args": [
-						"/C"
-					]
-				}
-			},
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
-			"problemMatcher": []
-		},
-		{
-			"label": "Build Front right 102",
-			"type": "shell",
-			"command": "make -s -j 10 WHEEL=-DFRONT_RIGHT all",
-			"options": {
-				"cwd": "${workspaceRoot}",
-				"shell": {
-					"executable": "cmd.exe",
-					"args": [
-						"/C"
-					]
-				}
-			},
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
-			"problemMatcher": []
-		},
-		{
-			"label": "Build Rear left 103",
-			"type": "shell",
-			"command": "make -s -j 10 WHEEL=-DREAR_LEFT all",
-			"options": {
-				"cwd": "${workspaceRoot}",
-				"shell": {
-					"executable": "cmd.exe",
-					"args": [
-						"/C"
-					]
-				}
-			},
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
-			"problemMatcher": []
-		},
-		{
-			"label": "Build Rear right 104",
-			"type": "shell",
-			"command": "make -s -j 10 WHEEL=-DREAR_RIGHT all",
+			"command": "mingw32-make -s -j 10 all",
 			"options": {
 				"cwd": "${workspaceRoot}",
 				"shell": {
@@ -99,7 +23,7 @@
 		{
 			"label": "Make Clean",
 			"type": "shell",
-			"command": "make -s clean",
+			"command": "mingw32-make -s clean",
 			"options": {
 				"cwd": "${workspaceRoot}",
 				"shell": {
@@ -210,81 +134,5 @@
 			},
 			"problemMatcher": []
 		},
-		{
-			"label": "Can flash Front left wheel 101",
-			"type": "shell",
-			"command": "PCBoot.exe 9 101 C:/work/project/InvertorFirmware/build/InvertorFirmware.bin",
-			"options": {
-				"cwd": "${workspaceRoot}",
-				"shell": {
-					"executable": "cmd.exe",
-					"args": [
-						"/C"
-					]
-				}
-			},
-			"group": {
-				"kind": "test",
-				"isDefault": true
-			},
-			"problemMatcher": []
-		},
-		{
-			"label": "Can flash Front right wheel 102",
-			"type": "shell",
-			"command": "PCBoot.exe 9 102 C:/work/project/InvertorFirmware/build/InvertorFirmware.bin",
-			"options": {
-				"cwd": "${workspaceRoot}",
-				"shell": {
-					"executable": "cmd.exe",
-					"args": [
-						"/C"
-					]
-				}
-			},
-			"group": {
-				"kind": "test",
-				"isDefault": true
-			},
-			"problemMatcher": []
-		},
-		{
-			"label": "Can flash Rear left wheel 103",
-			"type": "shell",
-			"command": "PCBoot.exe 9 103 C:/work/project/InvertorFirmware/build/InvertorFirmware.bin",
-			"options": {
-				"cwd": "${workspaceRoot}",
-				"shell": {
-					"executable": "cmd.exe",
-					"args": [
-						"/C"
-					]
-				}
-			},
-			"group": {
-				"kind": "test",
-				"isDefault": true
-			},
-			"problemMatcher": []
-		},
-		{
-			"label": "Can flash Rear right wheel 104",
-			"type": "shell",
-			"command": "PCBoot.exe 9 104 C:/work/project/InvertorFirmware/build/InvertorFirmware.bin",
-			"options": {
-				"cwd": "${workspaceRoot}",
-				"shell": {
-					"executable": "cmd.exe",
-					"args": [
-						"/C"
-					]
-				}
-			},
-			"group": {
-				"kind": "test",
-				"isDefault": true
-			},
-			"problemMatcher": []
-		}
 	]
 }

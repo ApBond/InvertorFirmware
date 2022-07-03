@@ -8,7 +8,8 @@
 
 uint8_t calibration();
 void tim16Init(void);
-float getServoAngle(void);
+void getServoAngle();
+float odomServoGetAngle(void);
 
 #endif
 

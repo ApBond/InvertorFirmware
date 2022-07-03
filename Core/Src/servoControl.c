@@ -1,7 +1,8 @@
 #include "servoControl.h"
 
-#define ZERO_POINT 803
-#define DEAD_ZONE 2
+#define ZERO_POINT 700
+#define DEAD_ZONE 5
+#define MAX_MES 780
 
 int pwm_prev[4]={0};
 int pwm_count[4]={0};
@@ -18,23 +19,32 @@ uint16_t mesuerment;
 
 uint8_t calibration()
 {
-	TIM16->CR1&=~TIM_CR1_CEN;
-	TIM16->DIER&=~TIM_DIER_CC1IE;
-	TIM16->ARR = 150;
-	TIM16->PSC = 2000-1;
-	TIM16->CR1 |= TIM_CR1_CEN;
 	int error;
 	while(1)
 	{	
-		if(reciveFlag==0) getServoAngle();
+		if(reciveFlag==0) 
+			getServoAngle();
+		
+		//delay_ms(10);
 		if(reciveFlag==2)
 		{
-			mesuerment = ((i2c_receive_buffer[0]<<8)+i2c_receive_buffer[1])>>4;
+			mesuerment = (((uint16_t)i2c_receive_buffer[0]<<8)+(uint16_t)i2c_receive_buffer[1])>>5;
+			reciveFlag=0;
 			error=mesuerment-ZERO_POINT;
-			if(abs(error)>DEAD_ZONE)
+			if(abs(error)>MAX_MES/2) // надо выставит примерно ровно иначе будут проблемы при переходе через ноль
 			{
-				//TIM16->CCR1 = 50;
-				#ifdef FRONT_LEFT 
+				if (ZERO_POINT > MAX_MES/2)
+				{
+					error = MAX_MES - ZERO_POINT + mesuerment;
+				}
+				else
+				{
+					error = -(MAX_MES - mesuerment + ZERO_POINT);
+				}
+			}
+			if (abs(error)>DEAD_ZONE)
+			{
+				TIM16->CCR1 = 400;
 				if(error<0)
 				{
 					GPIOB->BSRR= GPIO_BSRR_BS_5;
@@ -43,63 +53,29 @@ uint8_t calibration()
 				{
 					GPIOB->BSRR= GPIO_BSRR_BR_5;
 				}
-				#endif
-				#ifdef REAR_LEFT | REAR_RIGHT 
-				if(error>0)
-				{
-					GPIOB->BSRR= GPIO_BSRR_BS_5;
-				}
-				else if(error<0)
-				{
-					GPIOB->BSRR= GPIO_BSRR_BR_5;
-				}
-				#endif
-				#ifdef REAR_RIGHT 
-				if(error>0)
-				{
-					GPIOB->BSRR= GPIO_BSRR_BS_5;
-				}
-				else if(error<0)
-				{
-					GPIOB->BSRR= GPIO_BSRR_BR_5;
-				}
-				#endif
 			}
 			else
 			{
 				TIM16->CCR1 = 0xffff;
-				/*TIM16->CR1&=~TIM_CR1_CEN;
-				TIM16->PSC = 50-1;
-				TIM16->DIER|=TIM_DIER_CC1IE;
-				TIM16->CR1 |= TIM_CR1_CEN;
-				return;*/
+				TIM16->PSC = 500;
+				break;
 			}
-			reciveFlag=0;
 			delay_ms(1);
 		}		
-	}
-	
-	/*while (mesuerment<2000 || mesuerment>2080){
-		getServoAngle();
-		while(!(DMA1->ISR & DMA_ISR_TCIF7));
-		TIM16->CCR1 = 50;
-		if (mesuerment<2000) {//ch1
-			GPIOB->BRR= GPIO_BSRR_BS_5;
-		}
-		else if (mesuerment>2080) {
-			GPIOB->BSRR= GPIO_BSRR_BR_5;
-		}
-	}
-	TIM16->CCR1 = 0xffff;
-	TIM16->DIER|=TIM_DIER_CC1IE;//Настройка прерываний по совпадению*/
-	
+	}	
 }
 
-float getServoAngle(void)
+void getServoAngle()
 {
-	//I2C_Receiver(0x48, 2);
-	return (float)pwm_count[WHEEL]*360.0f/deg/RESOLUTION/REDUCTOR;
+	I2C_Receiver(0x48, 2);
+}
 
+float odomServoGetAngle(void)
+{
+	float temp;
+	temp=(float)(pwm_count[WHEEL]/(deg*RESOLUTION*REDUCTOR));
+	temp*=360;
+	return (float)temp;
 }
 
 void setServoAngle(float* targetAngle){
@@ -107,7 +83,11 @@ void setServoAngle(float* targetAngle){
 	uint8_t i;
 	int current_time;
 	if (pwm_count[WHEEL] != pwm_aim[WHEEL]){
-		for (i = 0; i < 4; i++) pwm_count[i]=pwm_prev[i] + (int)((pwm_aim[i]-pwm_prev[i])*fabs((pwm_count[WHEEL]-pwm_prev[WHEEL]))/dgam[WHEEL]);
+		for (i = 0; i < 4; i++) 
+		{
+			if (i!=WHEEL)
+				pwm_count[i]=pwm_prev[i] + (int)((float)(pwm_aim[i]-pwm_prev[i])*fabs((pwm_count[WHEEL]-pwm_prev[WHEEL]))/(float)dgam[WHEEL]);
+		}
 	}
 	else		
 		for (i = 0; i < 4; i++) pwm_count[i]=pwm_aim[i];
@@ -127,7 +107,7 @@ void setServoAngle(float* targetAngle){
 	if (gm<dgam[FR]) gm=dgam[FR];
 	if (gm<dgam[RL]) gm=dgam[RL];
 	if (gm<dgam[RR]) gm=dgam[RR];
-	TIM16->ARR=1500*gm/dgam[WHEEL];
+	TIM16->ARR=500*gm/dgam[WHEEL];
 	//TIM16->PSC=150*gm/dgam[WHEEL]*400;
 	//TIM16->ARR=dgam[WHEEL];
 

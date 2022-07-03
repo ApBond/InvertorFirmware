@@ -1,4 +1,4 @@
-savebin build\read.bin, 0x08002400, 0x62CC
+savebin build\read.bin, 0x00, 0x4000
 r
 g
 q
